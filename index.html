@@ -1,1 +1,157 @@
-PLACEHOLDER_WILL_FAIL
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hệ Mặt Trời 3D — Hardwin Solar</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<style>
+:root{--bg:#060913;--panel:rgba(13,20,38,.72);--text:#e6edf7;--muted:#8fa3c2;--accent:#fbbf24;--accent2:#38bdf8;--border:rgba(148,163,184,.22)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Sora,sans-serif}
+.glass{background:var(--panel);backdrop-filter:blur(10px);border:1px solid var(--border)}
+.planet-label{position:absolute;transform:translate(-50%,-130%);font-size:11px;font-weight:600;color:#dbe7ff;text-shadow:0 0 6px #000;pointer-events:none;white-space:nowrap;padding:2px 7px;border-radius:20px;background:rgba(8,14,30,.55);border:1px solid rgba(148,163,184,.25)}
+.nav-btn{display:flex;align-items:center;gap:6px;padding:7px 12px;border-radius:999px;font-size:12.5px;font-weight:500;color:var(--text);background:rgba(13,20,38,.6);border:1px solid var(--border);cursor:pointer;font-family:Sora,sans-serif}
+.nav-btn:hover{border-color:var(--accent);background:rgba(251,191,36,.12)}
+.nav-btn.visited{border-color:rgba(56,189,248,.55)}
+.ctrl-btn{padding:8px 14px;border-radius:10px;font-size:12.5px;font-weight:600;color:var(--text);background:rgba(13,20,38,.65);border:1px solid var(--border);cursor:pointer;font-family:Sora,sans-serif}
+.ctrl-btn.on{background:rgba(56,189,248,.18);border-color:var(--accent2);color:#bfe9ff}
+.ctrl-btn.primary{background:rgba(251,191,36,.16);border-color:var(--accent);color:#ffe7a8}
+input[type=range]{-webkit-appearance:none;height:4px;border-radius:4px;background:rgba(148,163,184,.3);outline:none;cursor:pointer;width:120px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);border:2px solid #060913}
+#infoPanel{transition:transform .4s,opacity .3s;transform:translateX(110%);opacity:0}
+#infoPanel.show{transform:translateX(0);opacity:1}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+</style>
+</head>
+<body>
+<div style="min-height:100vh;background:#060913">
+<div class="max-w-6xl" style="max-width:72rem;margin:0 auto;padding:1.5rem 1rem">
+  <div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;margin-bottom:16px">
+    <div>
+      <p style="font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--accent2);font-weight:600;margin:0 0 6px">HARDWIN SOLAR</p>
+      <h1 style="font-size:clamp(22px,4vw,34px);font-weight:700;margin:0">Hành trình khám phá <span style="color:var(--accent)">Hệ Mặt Trời</span></h1>
+      <p style="color:var(--muted);font-size:13.5px;margin:8px 0 0;max-width:560px;line-height:1.6">Kéo để xoay · cuộn để phóng · nhấp hành tinh hoặc dùng nút bên dưới để bay tới.</p>
+    </div>
+    <div class="glass" style="border-radius:12px;padding:12px 16px;min-width:200px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px"><span>Nhiệm vụ khám phá</span><span id="visitedCount" style="color:var(--accent);font-weight:700">0/9</span></div>
+      <div style="height:7px;border-radius:6px;background:rgba(148,163,184,.18);overflow:hidden"><div id="progressBar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--accent2),var(--accent));transition:width .5s"></div></div>
+    </div>
+  </div>
+  <div id="viewport" style="position:relative;width:100%;height:min(600px,70vh);border-radius:18px;overflow:hidden;border:1px solid var(--border)">
+    <div id="canvas3d" style="width:100%;height:100%"></div>
+    <div id="labels" style="position:absolute;inset:0;pointer-events:none;z-index:5"></div>
+    <div class="glass" style="position:absolute;left:14px;top:14px;z-index:10;border-radius:12px;padding:8px 12px;font-size:11.5px;color:var(--muted)">
+      <div><span style="color:var(--accent);font-weight:700">●</span> Mặt Trời · 8 hành tinh</div>
+      <div id="speedLabel" style="color:#bfe9ff">Tốc độ mô phỏng: 1.0×</div>
+    </div>
+    <div style="position:absolute;right:14px;top:14px;z-index:10;display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end">
+      <button id="btnPause" class="ctrl-btn primary">Tạm dừng</button>
+      <button id="btnOrbit" class="ctrl-btn on">Quỹ đạo</button>
+      <button id="btnLabel" class="ctrl-btn on">Nhãn</button>
+      <button id="btnReset" class="ctrl-btn">Đặt lại góc nhìn</button>
+    </div>
+    <div class="glass" style="position:absolute;left:14px;bottom:14px;z-index:10;border-radius:12px;padding:8px 12px;display:flex;align-items:center;gap:10px">
+      <span style="font-size:11.5px;color:var(--muted)">Tốc độ</span>
+      <input id="speedRange" type="range" min="0" max="100" value="20">
+    </div>
+    <div id="infoPanel" class="glass" style="position:absolute;right:14px;top:64px;bottom:60px;width:min(300px,calc(100% - 28px));z-index:20;overflow-y:auto;border-radius:16px;padding:16px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+        <div><div id="infoTag" style="font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent2);font-weight:600">Thiên thể</div>
+        <h3 id="infoName" style="font-size:20px;font-weight:700;margin:4px 0 0">—</h3></div>
+        <button id="infoClose" style="background:none;border:1px solid var(--border);color:var(--muted);width:28px;height:28px;border-radius:8px;cursor:pointer">×</button>
+      </div>
+      <p id="infoDesc" style="font-size:13px;line-height:1.65;color:#c9d6ea;margin:0 0 14px">—</p>
+      <div id="infoFacts" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+    <div id="loadMsg" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px;z-index:2">Đang tải mô phỏng 3D…</div>
+  </div>
+  <div id="planetNav" style="margin-top:16px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center"></div>
+  <p style="text-align:center;font-size:11px;color:var(--muted);margin-top:14px">Hardwin Solar · dữ liệu tham khảo thực tế · mô phỏng 3D</p>
+</div></div>
+<script>
+(function init(n){
+  if(typeof THREE==='undefined'||typeof THREE.OrbitControls==='undefined'){if(n<80)setTimeout(function(){init(n+1)},200);return;}
+  var container=document.getElementById('canvas3d'); if(!container)return;
+  var loadMsg=document.getElementById('loadMsg'); if(loadMsg)loadMsg.style.display='none';
+  var W=container.clientWidth||800,H=container.clientHeight||600;
+  var renderer=new THREE.WebGLRenderer({antialias:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio||1,2)); renderer.setSize(W,H);
+  container.appendChild(renderer.domElement);
+  var scene=new THREE.Scene(); scene.background=new THREE.Color(0x04060d);
+  var camera=new THREE.PerspectiveCamera(55,W/H,0.1,6000); camera.position.set(0,70,160);
+  var controls=new THREE.OrbitControls(camera,renderer.domElement);
+  controls.enableDamping=true; controls.minDistance=7; controls.maxDistance=700;
+  scene.add(new THREE.PointLight(0xfff2dd,1.5,0,0));
+  scene.add(new THREE.AmbientLight(0x556688,0.55));
+  function rnd(a,b){return a+Math.random()*(b-a)}
+  var starGeo=new THREE.BufferGeometry(),sp=[];
+  for(var i=0;i<3000;i++){var r=rnd(900,2200),th=rnd(0,6.28),ph=Math.acos(rnd(-1,1));sp.push(r*Math.sin(ph)*Math.cos(th),r*Math.cos(ph),r*Math.sin(ph)*Math.sin(th))}
+  starGeo.setAttribute('position',new THREE.Float32BufferAttribute(sp,3));
+  scene.add(new THREE.Points(starGeo,new THREE.PointsMaterial({color:0xffffff,size:1.5,sizeAttenuation:true,transparent:true,opacity:.85})));
+  var sun=new THREE.Mesh(new THREE.SphereGeometry(8,48,48),new THREE.MeshBasicMaterial({color:0xffb300}));
+  scene.add(sun);
+  var PD=[
+    {id:'sun',vi:'Mặt Trời',radius:8,dist:0,color:'#ffb300',speed:0,rot:.002,tag:'Ngôi sao trung tâm',dk:'1.392.700 km',kc:'0 km',qt:'—',tq:'25–35 ngày',nhiet:'~5.500°C',desc:'Mặt Trời chứa ~99,86% khối lượng Hệ Mặt Trời. Nguồn năng lượng của sự sống trên Trái Đất.'},
+    {id:'mercury',vi:'Sao Thủy',radius:1.2,dist:18,color:'#b0a69a',speed:.045,rot:.004,tag:'Gần Mặt Trời nhất',dk:'4.879 km',kc:'57,9 triệu km',qt:'88 ngày',tq:'58,6 ngày',nhiet:'-173°C ÷ 427°C',desc:'Hành tinh nhỏ nhất, không khí quyển đáng kể, nhiệt độ ngày đêm chênh lệch rất lớn.'},
+    {id:'venus',vi:'Sao Kim',radius:1.9,dist:26,color:'#e8c07a',speed:.035,rot:.002,tag:'Nóng nhất',dk:'12.104 km',kc:'108,2 triệu km',qt:'225 ngày',tq:'243 ngày',nhiet:'~465°C',desc:'Khí quyển CO₂ dày gây hiệu ứng nhà kính cực mạnh.'},
+    {id:'earth',vi:'Trái Đất',radius:2.0,dist:35,color:'#4a90d9',speed:.028,rot:.02,moon:true,tag:'Có sự sống',dk:'12.742 km',kc:'149,6 triệu km',qt:'365,25 ngày',tq:'24 giờ',nhiet:'~15°C',desc:'Hành tinh duy nhất biết đến có sự sống. Có một mặt trăng tự nhiên.'},
+    {id:'mars',vi:'Sao Hỏa',radius:1.5,dist:45,color:'#d1603d',speed:.022,rot:.018,tag:'Hành tinh đỏ',dk:'6.779 km',kc:'227,9 triệu km',qt:'687 ngày',tq:'24,6 giờ',nhiet:'~-63°C',desc:'Có Olympus Mons — núi lửa cao nhất Hệ Mặt Trời.'},
+    {id:'jupiter',vi:'Sao Mộc',radius:4.6,dist:66,color:'#d8a878',speed:.011,rot:.04,tag:'Lớn nhất',dk:'139.820 km',kc:'778,5 triệu km',qt:'11,9 năm',tq:'9,9 giờ',nhiet:'~-110°C',desc:'Hành tinh lớn nhất. Vệt Đỏ Lớn là bão tồn tại hàng trăm năm.'},
+    {id:'saturn',vi:'Sao Thổ',radius:3.9,dist:92,color:'#e0c88a',speed:.0075,rot:.038,ring:true,tag:'Vành đai nổi bật',dk:'116.460 km',kc:'1,43 tỷ km',qt:'29,4 năm',tq:'10,7 giờ',nhiet:'~-140°C',desc:'Vành đai gồm băng và đá, trải rộng rất lớn nhưng rất mỏng.'},
+    {id:'uranus',vi:'Thiên Vương',radius:2.9,dist:118,color:'#9fd8e0',speed:.0052,rot:.03,tag:'Nằm nghiêng',dk:'50.724 km',kc:'2,87 tỷ km',qt:'84 năm',tq:'17,2 giờ',nhiet:'~-195°C',desc:'Trục quay nghiêng ~98°. Màu xanh do khí metan.'},
+    {id:'neptune',vi:'Hải Vương',radius:2.8,dist:142,color:'#4a6fd9',speed:.004,rot:.032,tag:'Xa nhất',dk:'49.244 km',kc:'4,50 tỷ km',qt:'165 năm',tq:'16,1 giờ',nhiet:'~-200°C',desc:'Gió mạnh nhất Hệ Mặt Trời, có thể tới ~2.100 km/h.'}
+  ];
+  var planets=[],orbitLines=[],labelContainer=document.getElementById('labels');
+  PD.forEach(function(d){
+    var pivot=new THREE.Object3D(); scene.add(pivot);
+    var group=new THREE.Object3D(); group.position.x=d.dist; pivot.add(group);
+    var mesh=d.id==='sun'?sun:new THREE.Mesh(new THREE.SphereGeometry(d.radius,32,32),new THREE.MeshStandardMaterial({color:d.color,roughness:.7}));
+    if(d.id!=='sun')group.add(mesh);
+    if(d.ring){var ring=new THREE.Mesh(new THREE.RingGeometry(d.radius*1.4,d.radius*2.35,64),new THREE.MeshBasicMaterial({color:0xc9b896,side:THREE.DoubleSide,transparent:true,opacity:.65})); ring.rotation.x=-Math.PI/2; group.add(ring);}
+    if(d.moon){var mp=new THREE.Object3D(); group.add(mp); var moon=new THREE.Mesh(new THREE.SphereGeometry(.5,16,16),new THREE.MeshStandardMaterial({color:0xcccccc})); moon.position.x=3.6; mp.add(moon); d._moonPivot=mp;}
+    if(d.dist>0){var pts=[]; for(var i=0;i<128;i++){var a=i/128*Math.PI*2; pts.push(new THREE.Vector3(Math.cos(a)*d.dist,0,Math.sin(a)*d.dist));}
+      var line=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts),new THREE.LineBasicMaterial({color:0x3d5278,transparent:true,opacity:.4})); scene.add(line); orbitLines.push(line);}
+    var lb=document.createElement('div'); lb.className='planet-label'; lb.textContent=d.vi; labelContainer.appendChild(lb);
+    var obj={data:d,pivot:pivot,group:group,mesh:mesh,label:lb}; mesh.userData.planet=obj; planets.push(obj);
+    pivot.rotation.y=Math.random()*6.28;
+  });
+  var simPaused=false,speedMul=1,showOrbit=true,showLabel=true,visited={},visitedN=0;
+  var fly={active:false,t:0,fp:new THREE.Vector3(),ft:new THREE.Vector3(),tp:new THREE.Vector3(),tt:new THREE.Vector3()};
+  var _v=new THREE.Vector3(),_wp=new THREE.Vector3(),_dir=new THREE.Vector3();
+  var clock=new THREE.Clock();
+  function flyToPos(tp,tt){fly.fp.copy(camera.position);fly.ft.copy(controls.target);fly.tp.copy(tp);fly.tt.copy(tt);fly.t=0;fly.active=true;controls.enabled=false;}
+  function flyToPlanet(p){p.mesh.getWorldPosition(_wp);_dir.subVectors(camera.position,_wp).normalize();var off=p.data.radius*5+5;_v.copy(_wp).addScaledVector(_dir,off);_v.y+=p.data.radius*1.2;flyToPos(_v,_wp);markVisited(p);showInfo(p);}
+  function markVisited(p){if(visited[p.data.id])return;visited[p.data.id]=true;visitedN++;document.getElementById('visitedCount').textContent=visitedN+'/9';document.getElementById('progressBar').style.width=(visitedN/9*100)+'%';var btn=document.querySelector('[data-pid="'+p.data.id+'"]');if(btn)btn.classList.add('visited');}
+  function showInfo(p){var d=p.data;document.getElementById('infoTag').textContent=d.tag;document.getElementById('infoName').textContent=d.vi;document.getElementById('infoDesc').textContent=d.desc;
+    var rows=[['Đường kính',d.dk],['Khoảng cách tới Mặt Trời',d.kc],['Chu kỳ quỹ đạo',d.qt],['Chu kỳ tự quay',d.tq],['Nhiệt độ',d.nhiet]];
+    document.getElementById('infoFacts').innerHTML=rows.map(function(r){return '<div style="display:flex;justify-content:space-between;gap:10px;padding:8px 10px;border-radius:8px;background:rgba(56,189,248,.07);border:1px solid rgba(56,189,248,.12)"><span style="font-size:11.5px;color:var(--muted)">'+r[0]+'</span><span style="font-size:12px;font-weight:600;text-align:right">'+r[1]+'</span></div>';}).join('');
+    document.getElementById('infoPanel').classList.add('show');}
+  document.getElementById('infoClose').onclick=function(){document.getElementById('infoPanel').classList.remove('show');};
+  var nav=document.getElementById('planetNav');
+  PD.forEach(function(d){var b=document.createElement('button');b.className='nav-btn';b.setAttribute('data-pid',d.id);b.innerHTML='<span class="dot" style="background:'+d.color+'"></span>'+d.vi;b.onclick=function(){var p=planets.find(function(x){return x.data.id===d.id});if(p)flyToPlanet(p);};nav.appendChild(b);});
+  var btnPause=document.getElementById('btnPause');
+  btnPause.onclick=function(){simPaused=!simPaused;btnPause.textContent=simPaused?'Tiếp tục':'Tạm dừng';};
+  document.getElementById('btnOrbit').onclick=function(){showOrbit=!showOrbit;this.classList.toggle('on',showOrbit);orbitLines.forEach(function(l){l.visible=showOrbit;});};
+  document.getElementById('btnLabel').onclick=function(){showLabel=!showLabel;this.classList.toggle('on',showLabel);labelContainer.style.display=showLabel?'block':'none';};
+  document.getElementById('btnReset').onclick=function(){flyToPos(new THREE.Vector3(0,70,160),new THREE.Vector3(0,0,0));document.getElementById('infoPanel').classList.remove('show');};
+  var speedRange=document.getElementById('speedRange');
+  function updSpeed(){speedMul=0.1+parseInt(speedRange.value,10)/100*7;document.getElementById('speedLabel').textContent='Tốc độ mô phỏng: '+speedMul.toFixed(1)+'×';}
+  speedRange.oninput=updSpeed;updSpeed();
+  var ray=new THREE.Raycaster(),mouse=new THREE.Vector2(),downX=0,downY=0,dom=renderer.domElement;
+  dom.addEventListener('pointerdown',function(e){downX=e.clientX;downY=e.clientY;});
+  dom.addEventListener('pointerup',function(e){if(Math.abs(e.clientX-downX)>6||Math.abs(e.clientY-downY)>6)return;var rect=dom.getBoundingClientRect();mouse.x=((e.clientX-rect.left)/rect.width)*2-1;mouse.y=-((e.clientY-rect.top)/rect.height)*2+1;ray.setFromCamera(mouse,camera);var hits=ray.intersectObjects(planets.map(function(p){return p.mesh}));if(hits.length&&hits[0].object.userData.planet)flyToPlanet(hits[0].object.userData.planet);});
+  window.addEventListener('resize',function(){W=container.clientWidth;H=container.clientHeight;if(!W||!H)return;camera.aspect=W/H;camera.updateProjectionMatrix();renderer.setSize(W,H);});
+  function smooth(t){return t*t*(3-2*t)}
+  function animate(){requestAnimationFrame(animate);var dt=Math.min(clock.getDelta(),0.05);
+    if(!simPaused){sun.rotation.y+=0.003*dt*60*speedMul*.5;planets.forEach(function(p){if(p.data.dist>0)p.pivot.rotation.y+=p.data.speed*dt*60*speedMul*.5;p.mesh.rotation.y+=p.data.rot*dt*60*speedMul*.5;if(p.data._moonPivot)p.data._moonPivot.rotation.y+=0.05*dt*60*speedMul*.5;});}
+    if(fly.active){fly.t=Math.min(1,fly.t+dt*1.4);var s=smooth(fly.t);camera.position.lerpVectors(fly.fp,fly.tp,s);controls.target.lerpVectors(fly.ft,fly.tt,s);if(fly.t>=1){fly.active=false;controls.enabled=true;}}
+    controls.update();
+    if(showLabel){var cw=container.clientWidth||W,ch=container.clientHeight||H;planets.forEach(function(p){p.mesh.getWorldPosition(_wp);_v.copy(_wp).project(camera);if(_v.z<1){p.label.style.display='block';p.label.style.left=(_v.x*.5+.5)*cw+'px';p.label.style.top=(-_v.y*.5+.5)*ch+'px';}else p.label.style.display='none';});}
+    renderer.render(scene,camera);}
+  animate();
+})(0);
+</script>
+</body>
+</html>
