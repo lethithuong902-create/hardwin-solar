@@ -1,1 +1,29 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 64 64"><image width="64" height="64" xlink:href="data:image/png;base64,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"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#1e3a5f"/>
+      <stop offset="100%" stop-color="#0a1628"/>
+    </radialGradient>
+    <linearGradient id="ring" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="50%" stop-color="#a78bfa"/>
+      <stop offset="100%" stop-color="#f472b6"/>
+    </linearGradient>
+    <linearGradient id="core" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="40%" stop-color="#f87171"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="1.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <circle cx="64" cy="64" r="62" fill="url(#bg)"/>
+  <circle cx="64" cy="64" r="56" fill="none" stroke="url(#ring)" stroke-width="4" filter="url(#glow)"/>
+  <circle cx="64" cy="64" r="48" fill="none" stroke="#38bdf8" stroke-width="1.5" opacity="0.6"/>
+  <path d="M64 28 C88 32 96 52 90 70 C84 88 64 96 48 88 C32 80 28 60 40 46 C50 34 64 28 64 28 Z" fill="url(#core)" opacity="0.9" filter="url(#glow)"/>
+  <path d="M64 40 C78 44 82 58 76 68 C70 78 56 80 48 72 C42 66 42 54 50 48 C56 42 64 40 64 40 Z" fill="#0ea5e9" opacity="0.85"/>
+  <circle cx="64" cy="58" r="8" fill="#f8fafc" opacity="0.95"/>
+  <circle cx="64" cy="58" r="3.5" fill="#0f172a"/>
+</svg>
