@@ -3,7 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Hardwin Solar — Thượng Đế Hệ Mặt Trời</title>
+<title>Hardwin Solar — Hệ Mặt Trời 3D</title>
+<meta name="application-name" content="Hardwin">
+<meta name="apple-mobile-web-app-title" content="Hardwin">
+<meta name="theme-color" content="#060913">
+<meta name="description" content="Hardwin Solar — mô phỏng Hệ Mặt Trời 3D. Khám phá hành tinh, thử nghiệm hủy diệt và tái tạo sự sống.">
+<meta property="og:title" content="Hardwin Solar">
+<meta property="og:description" content="Mô phỏng Hệ Mặt Trời 3D — Hardwin">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://hardwin-solar.vercel.app/">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/favicon.svg">
+<link rel="manifest" href="/site.webmanifest">
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
@@ -48,14 +59,12 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
       <div style="height:7px;border-radius:6px;background:rgba(148,163,184,.18);overflow:hidden"><div id="progressBar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--accent2),var(--accent));transition:width .4s"></div></div>
     </div>
   </div>
-
   <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px">
     <button class="mode-btn on-explore" data-mode="explore" id="modeExplore">🔭 Khám phá</button>
     <button class="mode-btn" data-mode="destroy" id="modeDestroy">💥 Hủy diệt</button>
     <button class="mode-btn" data-mode="create" id="modeCreate">🌱 Tái tạo sự sống</button>
     <button class="mode-btn" id="btnFullReset" style="border-color:var(--accent)">↺ Lặp lại hệ thống</button>
   </div>
-
   <div id="viewport" style="position:relative;width:100%;height:min(620px,72vh);border-radius:18px;overflow:hidden;border:1px solid var(--border)">
     <div id="canvas3d" style="width:100%;height:100%"></div>
     <div id="labels" style="position:absolute;inset:0;pointer-events:none;z-index:5"></div>
@@ -75,15 +84,15 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
     </div>
     <div id="weaponBar" class="glass" style="display:none;position:absolute;left:50%;bottom:12px;transform:translateX(-50%);z-index:12;border-radius:14px;padding:8px 12px;gap:8px;align-items:center">
       <span style="font-size:11px;color:var(--danger);font-weight:600">Vũ khí:</span>
-      <button class="ctrl-btn on" data-weapon="meteor" id="wMeteor">☄️ Thiên thạch</button>
-      <button class="ctrl-btn" data-weapon="laser" id="wLaser">🔦 Laser</button>
-      <button class="ctrl-btn" data-weapon="nova" id="wNova">☢️ Siêu tân tinh</button>
+      <button class="ctrl-btn on" data-weapon="meteor">☄️ Thiên thạch</button>
+      <button class="ctrl-btn" data-weapon="laser">🔦 Laser</button>
+      <button class="ctrl-btn" data-weapon="nova">☢️ Siêu tân tinh</button>
     </div>
     <div id="createBar" class="glass" style="display:none;position:absolute;left:50%;bottom:12px;transform:translateX(-50%);z-index:12;border-radius:14px;padding:8px 12px;gap:8px;align-items:center">
       <span style="font-size:11px;color:var(--life);font-weight:600">Gieo:</span>
-      <button class="ctrl-btn on" data-seed="forest" id="sForest">🌳 Rừng</button>
-      <button class="ctrl-btn" data-seed="ocean" id="sOcean">🌊 Đại dương</button>
-      <button class="ctrl-btn" data-seed="city" id="sCity">🏙️ Sự sống thông minh</button>
+      <button class="ctrl-btn on" data-seed="forest">🌳 Rừng</button>
+      <button class="ctrl-btn" data-seed="ocean">🌊 Đại dương</button>
+      <button class="ctrl-btn" data-seed="city">🏙️ Sự sống thông minh</button>
     </div>
     <div id="infoPanel" class="glass" style="position:absolute;right:12px;top:56px;bottom:56px;width:min(290px,calc(100% - 24px));z-index:20;overflow-y:auto;border-radius:16px;padding:14px">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
@@ -99,7 +108,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
     <div id="loadMsg" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px;z-index:2">Đang tải vũ trụ…</div>
   </div>
   <div id="planetNav" style="margin-top:14px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center"></div>
-  <p style="text-align:center;font-size:11px;color:var(--muted);margin-top:12px">Hardwin Solar · mô phỏng thử nghiệm · không phải khoa học chính xác 100%</p>
+  <p style="text-align:center;font-size:11px;color:var(--muted);margin-top:12px">Hardwin Solar · hardwin-solar.vercel.app</p>
 </div></div>
 <script>
 (function init(n){
@@ -140,10 +149,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
     {id:'saturn',vi:'Sao Thổ',radius:3.9,dist:92,speed:.0075,rot:.038,ring:true,tag:'Khí',dk:'116.460 km',kc:'1,43 tỷ km',qt:'29 năm',tq:'10,7 giờ',nhiet:'~-140°C',desc:'Vành đai nổi bật.'},
     {id:'uranus',vi:'Thiên Vương',radius:2.9,dist:118,speed:.0052,rot:.03,tag:'Băng',dk:'50.724 km',kc:'2,87 tỷ km',qt:'84 năm',tq:'17 giờ',nhiet:'~-195°C',desc:'Trục nghiêng mạnh.'},
     {id:'neptune',vi:'Hải Vương',radius:2.8,dist:142,speed:.004,rot:.032,tag:'Băng',dk:'49.244 km',kc:'4,5 tỷ km',qt:'165 năm',tq:'16 giờ',nhiet:'~-200°C',desc:'Xa nhất, gió cực mạnh.'},
-    {id:'moon',vi:'Mặt Trăng',radius:.55,dist:0,speed:0,rot:.01,tag:'Vệ tinh',dk:'3.474 km',kc:'384.400 km (Trái Đất)',qt:'27,3 ngày',tq:'27,3 ngày',nhiet:'-173÷127°C',desc:'Vệ tinh tự nhiên của Trái Đất. Có thể nhấp để khám phá.'}
+    {id:'moon',vi:'Mặt Trăng',radius:.55,dist:0,speed:0,rot:.01,tag:'Vệ tinh',dk:'3.474 km',kc:'384.400 km (Trái Đất)',qt:'27,3 ngày',tq:'27,3 ngày',nhiet:'-173÷127°C',desc:'Vệ tinh tự nhiên của Trái Đất.'}
   ];
   var planets=[],orbitLines=[],clickables=[],labelContainer=document.getElementById('labels');
-  var earthRef=null,moonMesh=null;
   PD.forEach(function(d){
     if(d.id==='moon')return;
     var pivot=new THREE.Object3D(); scene.add(pivot);
@@ -154,8 +162,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
     if(d.ring){var ring=new THREE.Mesh(new THREE.RingGeometry(d.radius*1.35,d.radius*2.3,96),new THREE.MeshBasicMaterial({color:0xc9b896,side:THREE.DoubleSide,transparent:true,opacity:.7}));ring.rotation.x=-Math.PI/2;group.add(ring);}
     if(d.moon){
       var mp=new THREE.Object3D(); group.add(mp);
-      moonMesh=new THREE.Mesh(new THREE.SphereGeometry(.55,32,32),new THREE.MeshStandardMaterial({map:moonTex,roughness:1}));
-      moonMesh.position.x=3.5; mp.add(moonMesh); d._moonPivot=mp; earthRef=null;
+      var moonMesh=new THREE.Mesh(new THREE.SphereGeometry(.55,32,32),new THREE.MeshStandardMaterial({map:moonTex,roughness:1}));
+      moonMesh.position.x=3.5; mp.add(moonMesh); d._moonPivot=mp;
       var moonData=PD.find(function(x){return x.id==='moon'});
       var moonObj={data:moonData,pivot:null,group:mp,mesh:moonMesh,label:null,destroyed:false,life:null,isMoon:true};
       moonMesh.userData.planet=moonObj; clickables.push(moonMesh);
@@ -167,22 +175,19 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
     var obj={data:d,pivot:pivot,group:group,mesh:mesh,label:lb,destroyed:false,life:null};
     mesh.userData.planet=obj; planets.push(obj); clickables.push(mesh);
     pivot.rotation.y=Math.random()*6.28;
-    if(d.id==='earth')earthRef=obj;
   });
-
   var mode='explore',weapon='meteor',seed='forest';
   var simPaused=false,speedMul=1,showOrbit=true,showLabel=true,visited={},visitedN=0;
   var fly={active:false,t:0,fp:new THREE.Vector3(),ft:new THREE.Vector3(),tp:new THREE.Vector3(),tt:new THREE.Vector3()};
   var _v=new THREE.Vector3(),_wp=new THREE.Vector3(),_dir=new THREE.Vector3();
   var effects=[],clock=new THREE.Clock();
-
-  function toast(msg,color){var t=document.getElementById('toast');t.textContent=msg;t.style.borderColor=color||'var(--border)';t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2200);}
+  function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2200);}
   function setMode(m){
     mode=m;
     document.querySelectorAll('.mode-btn[data-mode]').forEach(function(b){b.className='mode-btn';if(b.dataset.mode===m)b.classList.add(m==='explore'?'on-explore':m==='destroy'?'on-destroy':'on-create');});
     document.getElementById('weaponBar').style.display=m==='destroy'?'flex':'none';
     document.getElementById('createBar').style.display=m==='create'?'flex':'none';
-    var hints={explore:'Chế độ: Khám phá — nhấp hành tinh / Mặt Trăng để xem thông tin',destroy:'Chế độ: Hủy diệt — chọn vũ khí rồi nhấp vào hành tinh (trừ Mặt Trời)',create:'Chế độ: Tái tạo — chọn loại sự sống rồi nhấp hành tinh còn sống'};
+    var hints={explore:'Chế độ: Khám phá — nhấp hành tinh / Mặt Trăng',destroy:'Chế độ: Hủy diệt — chọn vũ khí rồi nhấp hành tinh',create:'Chế độ: Tái tạo — chọn sự sống rồi nhấp hành tinh'};
     document.getElementById('modeHint').textContent=hints[m];
   }
   document.getElementById('modeExplore').onclick=function(){setMode('explore');};
@@ -190,80 +195,18 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
   document.getElementById('modeCreate').onclick=function(){setMode('create');};
   document.querySelectorAll('[data-weapon]').forEach(function(b){b.onclick=function(){weapon=b.dataset.weapon;document.querySelectorAll('[data-weapon]').forEach(function(x){x.classList.toggle('on',x===b);});};});
   document.querySelectorAll('[data-seed]').forEach(function(b){b.onclick=function(){seed=b.dataset.seed;document.querySelectorAll('[data-seed]').forEach(function(x){x.classList.toggle('on',x===b);});};});
-
-  function burst(pos,color,count){
-    var geo=new THREE.BufferGeometry(); var arr=[]; for(var i=0;i<count;i++)arr.push(pos.x,pos.y,pos.z);
-    geo.setAttribute('position',new THREE.Float32BufferAttribute(arr,3));
-    var mat=new THREE.PointsMaterial({color:color,size:1.2,transparent:true,opacity:1});
-    var pts=new THREE.Points(geo,mat); scene.add(pts);
-    var vels=[]; for(var j=0;j<count;j++)vels.push(new THREE.Vector3(rnd(-1,1),rnd(-1,1),rnd(-1,1)).normalize().multiplyScalar(rnd(4,14)));
-    effects.push({mesh:pts,vels:vels,life:1});
-  }
-  function destroyPlanet(p){
-    if(p.data.id==='sun'){toast('Không thể hủy diệt Mặt Trời trong mô phỏng này.','var(--accent)');return;}
-    if(p.destroyed){toast(p.data.vi+' đã bị hủy.','var(--danger)');return;}
-    p.mesh.getWorldPosition(_wp);
-    var col=weapon==='laser'?0x38bdf8:weapon==='nova'?0xfbbf24:0xf87171;
-    burst(_wp,col,weapon==='nova'?80:40);
-    p.destroyed=true; p.life=null; p.mesh.visible=false;
-    if(p.label)p.label.style.opacity='.35';
-    var btn=document.querySelector('[data-pid="'+p.data.id+'"]'); if(btn){btn.classList.add('destroyed');btn.classList.remove('alive');}
-    toast((weapon==='meteor'?'Thiên thạch':weapon==='laser'?'Laser':'Siêu tân tinh')+' → '+p.data.vi+' đã bị hủy diệt!','var(--danger)');
-    showInfo(p);
-  }
-  function seedPlanet(p){
-    if(p.data.id==='sun'){toast('Không gieo sự sống trên Mặt Trời.','var(--accent)');return;}
-    if(p.destroyed){toast('Hành tinh đã bị hủy — hãy Lặp lại hệ thống trước.','var(--danger)');return;}
-    p.life=seed;
-    var colors={forest:0x4ade80,ocean:0x38bdf8,city:0xfbbf24};
-    p.mesh.getWorldPosition(_wp); burst(_wp,colors[seed]||0x4ade80,35);
-    if(p.mesh.material&&p.mesh.material.emissive){p.mesh.material.emissive=new THREE.Color(colors[seed]);p.mesh.material.emissiveIntensity=0.35;}
-    else if(p.mesh.material){p.mesh.material.emissive=new THREE.Color(colors[seed]);p.mesh.material.emissiveIntensity=0.35;}
-    var btn=document.querySelector('[data-pid="'+p.data.id+'"]'); if(btn)btn.classList.add('alive');
-    var names={forest:'Rừng',ocean:'Đại dương',city:'Sự sống thông minh'};
-    toast('Đã gieo '+names[seed]+' lên '+p.data.vi+'!','var(--life)');
-    showInfo(p);
-  }
-  function fullReset(){
-    planets.forEach(function(p){
-      p.destroyed=false; p.life=null; p.mesh.visible=true;
-      if(p.mesh.material&&p.mesh.material.emissive){p.mesh.material.emissiveIntensity=0;}
-      if(p.label)p.label.style.opacity='1';
-      var btn=document.querySelector('[data-pid="'+p.data.id+'"]'); if(btn){btn.classList.remove('destroyed','alive');}
-    });
-    visited={}; visitedN=0;
-    document.getElementById('visitedCount').textContent='0/10';
-    document.getElementById('progressBar').style.width='0%';
-    toast('Hệ thống đã được khôi phục về ban đầu.','var(--accent2)');
-    setMode('explore');
-  }
+  function burst(pos,color,count){var geo=new THREE.BufferGeometry();var arr=[];for(var i=0;i<count;i++)arr.push(pos.x,pos.y,pos.z);geo.setAttribute('position',new THREE.Float32BufferAttribute(arr,3));var mat=new THREE.PointsMaterial({color:color,size:1.2,transparent:true,opacity:1});var pts=new THREE.Points(geo,mat);scene.add(pts);var vels=[];for(var j=0;j<count;j++)vels.push(new THREE.Vector3(rnd(-1,1),rnd(-1,1),rnd(-1,1)).normalize().multiplyScalar(rnd(4,14)));effects.push({mesh:pts,vels:vels,life:1});}
+  function destroyPlanet(p){if(p.data.id==='sun'){toast('Không thể hủy diệt Mặt Trời.');return;}if(p.destroyed){toast(p.data.vi+' đã bị hủy.');return;}p.mesh.getWorldPosition(_wp);burst(_wp,weapon==='laser'?0x38bdf8:weapon==='nova'?0xfbbf24:0xf87171,weapon==='nova'?80:40);p.destroyed=true;p.life=null;p.mesh.visible=false;if(p.label)p.label.style.opacity='.35';var btn=document.querySelector('[data-pid="'+p.data.id+'"]');if(btn){btn.classList.add('destroyed');btn.classList.remove('alive');}toast(p.data.vi+' đã bị hủy diệt!');showInfo(p);}
+  function seedPlanet(p){if(p.data.id==='sun'){toast('Không gieo sự sống trên Mặt Trời.');return;}if(p.destroyed){toast('Hành tinh đã hủy — hãy Lặp lại hệ thống.');return;}p.life=seed;var colors={forest:0x4ade80,ocean:0x38bdf8,city:0xfbbf24};p.mesh.getWorldPosition(_wp);burst(_wp,colors[seed]||0x4ade80,35);if(p.mesh.material){p.mesh.material.emissive=new THREE.Color(colors[seed]);p.mesh.material.emissiveIntensity=0.35;}var btn=document.querySelector('[data-pid="'+p.data.id+'"]');if(btn)btn.classList.add('alive');toast('Đã gieo sự sống lên '+p.data.vi+'!');showInfo(p);}
+  function fullReset(){planets.forEach(function(p){p.destroyed=false;p.life=null;p.mesh.visible=true;if(p.mesh.material&&p.mesh.material.emissive)p.mesh.material.emissiveIntensity=0;if(p.label)p.label.style.opacity='1';var btn=document.querySelector('[data-pid="'+p.data.id+'"]');if(btn)btn.classList.remove('destroyed','alive');});visited={};visitedN=0;document.getElementById('visitedCount').textContent='0/10';document.getElementById('progressBar').style.width='0%';toast('Hệ thống đã khôi phục.');setMode('explore');}
   document.getElementById('btnFullReset').onclick=fullReset;
-
   function flyToPos(tp,tt){fly.fp.copy(camera.position);fly.ft.copy(controls.target);fly.tp.copy(tp);fly.tt.copy(tt);fly.t=0;fly.active=true;controls.enabled=false;}
-  function flyToPlanet(p){if(p.destroyed&&mode==='explore'){toast(p.data.vi+' đã bị hủy.','var(--danger)');showInfo(p);return;}p.mesh.getWorldPosition(_wp);_dir.subVectors(camera.position,_wp).normalize();var off=(p.data.radius||1)*5+4;_v.copy(_wp).addScaledVector(_dir,off);_v.y+=(p.data.radius||1)*1.1;flyToPos(_v,_wp);if(mode==='explore'){markVisited(p);showInfo(p);}else if(mode==='destroy')destroyPlanet(p);else if(mode==='create')seedPlanet(p);}
+  function flyToPlanet(p){if(p.destroyed&&mode==='explore'){toast(p.data.vi+' đã bị hủy.');showInfo(p);return;}p.mesh.getWorldPosition(_wp);_dir.subVectors(camera.position,_wp).normalize();var off=(p.data.radius||1)*5+4;_v.copy(_wp).addScaledVector(_dir,off);_v.y+=(p.data.radius||1)*1.1;flyToPos(_v,_wp);if(mode==='explore'){markVisited(p);showInfo(p);}else if(mode==='destroy')destroyPlanet(p);else if(mode==='create')seedPlanet(p);}
   function markVisited(p){if(visited[p.data.id])return;visited[p.data.id]=true;visitedN++;document.getElementById('visitedCount').textContent=visitedN+'/10';document.getElementById('progressBar').style.width=(visitedN/10*100)+'%';var btn=document.querySelector('[data-pid="'+p.data.id+'"]');if(btn)btn.classList.add('visited');}
-  function showInfo(p){var d=p.data;document.getElementById('infoTag').textContent=d.tag;document.getElementById('infoName').textContent=d.vi;
-    document.getElementById('infoDesc').textContent=d.desc;
-    var rows=[['Đường kính',d.dk],['Khoảng cách',d.kc],['Chu kỳ quỹ đạo',d.qt],['Tự quay',d.tq],['Nhiệt độ',d.nhiet]];
-    document.getElementById('infoFacts').innerHTML=rows.map(function(r){return '<div style="display:flex;justify-content:space-between;gap:8px;padding:7px 9px;border-radius:8px;background:rgba(56,189,248,.07);border:1px solid rgba(56,189,248,.12)"><span style="font-size:11px;color:var(--muted)">'+r[0]+'</span><span style="font-size:11.5px;font-weight:600;text-align:right">'+r[1]+'</span></div>';}).join('');
-    var st='Trạng thái: bình thường';
-    if(p.destroyed)st='Trạng thái: 💥 ĐÃ HỦY DIỆT';
-    else if(p.life==='forest')st='Trạng thái: 🌳 Có rừng';
-    else if(p.life==='ocean')st='Trạng thái: 🌊 Có đại dương';
-    else if(p.life==='city')st='Trạng thái: 🏙️ Có sự sống thông minh';
-    document.getElementById('infoStatus').textContent=st;
-    document.getElementById('infoPanel').classList.add('show');
-  }
+  function showInfo(p){var d=p.data;document.getElementById('infoTag').textContent=d.tag;document.getElementById('infoName').textContent=d.vi;document.getElementById('infoDesc').textContent=d.desc;var rows=[['Đường kính',d.dk],['Khoảng cách',d.kc],['Chu kỳ quỹ đạo',d.qt],['Tự quay',d.tq],['Nhiệt độ',d.nhiet]];document.getElementById('infoFacts').innerHTML=rows.map(function(r){return '<div style="display:flex;justify-content:space-between;gap:8px;padding:7px 9px;border-radius:8px;background:rgba(56,189,248,.07);border:1px solid rgba(56,189,248,.12)"><span style="font-size:11px;color:var(--muted)">'+r[0]+'</span><span style="font-size:11.5px;font-weight:600;text-align:right">'+r[1]+'</span></div>';}).join('');var st='Trạng thái: bình thường';if(p.destroyed)st='Trạng thái: 💥 ĐÃ HỦY DIỆT';else if(p.life)st='Trạng thái: 🌱 Có sự sống';document.getElementById('infoStatus').textContent=st;document.getElementById('infoPanel').classList.add('show');}
   document.getElementById('infoClose').onclick=function(){document.getElementById('infoPanel').classList.remove('show');};
-
   var nav=document.getElementById('planetNav');
-  PD.forEach(function(d){
-    var b=document.createElement('button'); b.className='nav-btn'; b.setAttribute('data-pid',d.id);
-    b.innerHTML='<span class="dot" style="background:'+(d.id==='moon'?'#c8c4b8':d.id==='sun'?'#ffb300':'#94a3b8')+'"></span>'+d.vi;
-    b.onclick=function(){var p=planets.find(function(x){return x.data.id===d.id});if(p)flyToPlanet(p);};
-    nav.appendChild(b);
-  });
-
+  PD.forEach(function(d){var b=document.createElement('button');b.className='nav-btn';b.setAttribute('data-pid',d.id);b.innerHTML='<span class="dot" style="background:#94a3b8"></span>'+d.vi;b.onclick=function(){var p=planets.find(function(x){return x.data.id===d.id});if(p)flyToPlanet(p);};nav.appendChild(b);});
   var btnPause=document.getElementById('btnPause');
   btnPause.onclick=function(){simPaused=!simPaused;btnPause.textContent=simPaused?'Tiếp tục':'Tạm dừng';};
   document.getElementById('btnOrbit').onclick=function(){showOrbit=!showOrbit;this.classList.toggle('on',showOrbit);orbitLines.forEach(function(l){l.visible=showOrbit;});};
@@ -272,44 +215,18 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
   var speedRange=document.getElementById('speedRange');
   function updSpeed(){speedMul=0.1+parseInt(speedRange.value,10)/100*7;document.getElementById('speedLabel').textContent='Tốc độ: '+speedMul.toFixed(1)+'×';}
   speedRange.oninput=updSpeed;updSpeed();
-
   var ray=new THREE.Raycaster(),mouse=new THREE.Vector2(),downX=0,downY=0,dom=renderer.domElement;
   dom.addEventListener('pointerdown',function(e){downX=e.clientX;downY=e.clientY;});
-  dom.addEventListener('pointerup',function(e){
-    if(Math.abs(e.clientX-downX)>6||Math.abs(e.clientY-downY)>6)return;
-    var rect=dom.getBoundingClientRect();
-    mouse.x=((e.clientX-rect.left)/rect.width)*2-1; mouse.y=-((e.clientY-rect.top)/rect.height)*2+1;
-    ray.setFromCamera(mouse,camera);
-    var hits=ray.intersectObjects(clickables,false);
-    if(hits.length&&hits[0].object.userData.planet)flyToPlanet(hits[0].object.userData.planet);
-  });
+  dom.addEventListener('pointerup',function(e){if(Math.abs(e.clientX-downX)>6||Math.abs(e.clientY-downY)>6)return;var rect=dom.getBoundingClientRect();mouse.x=((e.clientX-rect.left)/rect.width)*2-1;mouse.y=-((e.clientY-rect.top)/rect.height)*2+1;ray.setFromCamera(mouse,camera);var hits=ray.intersectObjects(clickables,false);if(hits.length&&hits[0].object.userData.planet)flyToPlanet(hits[0].object.userData.planet);});
   window.addEventListener('resize',function(){W=container.clientWidth;H=container.clientHeight;if(!W||!H)return;camera.aspect=W/H;camera.updateProjectionMatrix();renderer.setSize(W,H);});
   function smooth(t){return t*t*(3-2*t)}
-  function animate(){
-    requestAnimationFrame(animate); var dt=Math.min(clock.getDelta(),0.05);
-    if(!simPaused){
-      sun.rotation.y+=0.003*dt*60*speedMul*.5;
-      planets.forEach(function(p){
-        if(p.isMoon)return;
-        if(p.data.dist>0&&p.pivot)p.pivot.rotation.y+=p.data.speed*dt*60*speedMul*.5;
-        if(p.mesh)p.mesh.rotation.y+=p.data.rot*dt*60*speedMul*.5;
-        if(p.data._moonPivot)p.data._moonPivot.rotation.y+=0.05*dt*60*speedMul*.5;
-      });
-    }
+  function animate(){requestAnimationFrame(animate);var dt=Math.min(clock.getDelta(),0.05);
+    if(!simPaused){sun.rotation.y+=0.003*dt*60*speedMul*.5;planets.forEach(function(p){if(p.isMoon)return;if(p.data.dist>0&&p.pivot)p.pivot.rotation.y+=p.data.speed*dt*60*speedMul*.5;if(p.mesh)p.mesh.rotation.y+=p.data.rot*dt*60*speedMul*.5;if(p.data._moonPivot)p.data._moonPivot.rotation.y+=0.05*dt*60*speedMul*.5;});}
     if(fly.active){fly.t=Math.min(1,fly.t+dt*1.4);var s=smooth(fly.t);camera.position.lerpVectors(fly.fp,fly.tp,s);controls.target.lerpVectors(fly.ft,fly.tt,s);if(fly.t>=1){fly.active=false;controls.enabled=true;}}
-    for(var ei=effects.length-1;ei>=0;ei--){
-      var e=effects[ei]; e.life-=dt*1.2; var pos=e.mesh.geometry.attributes.position;
-      for(var k=0;k<e.vels.length;k++){pos.array[k*3]+=e.vels[k].x*dt*8;pos.array[k*3+1]+=e.vels[k].y*dt*8;pos.array[k*3+2]+=e.vels[k].z*dt*8;}
-      pos.needsUpdate=true; e.mesh.material.opacity=Math.max(0,e.life);
-      if(e.life<=0){scene.remove(e.mesh);effects.splice(ei,1);}
-    }
+    for(var ei=effects.length-1;ei>=0;ei--){var e=effects[ei];e.life-=dt*1.2;var pos=e.mesh.geometry.attributes.position;for(var k=0;k<e.vels.length;k++){pos.array[k*3]+=e.vels[k].x*dt*8;pos.array[k*3+1]+=e.vels[k].y*dt*8;pos.array[k*3+2]+=e.vels[k].z*dt*8;}pos.needsUpdate=true;e.mesh.material.opacity=Math.max(0,e.life);if(e.life<=0){scene.remove(e.mesh);effects.splice(ei,1);}}
     controls.update();
-    if(showLabel){var cw=container.clientWidth||W,ch=container.clientHeight||H;
-      planets.forEach(function(p){if(!p.label||!p.mesh.visible){if(p.label)p.label.style.display='none';return;}
-        p.mesh.getWorldPosition(_wp);_v.copy(_wp).project(camera);
-        if(_v.z<1){p.label.style.display='block';p.label.style.left=(_v.x*.5+.5)*cw+'px';p.label.style.top=(-_v.y*.5+.5)*ch+'px';}else p.label.style.display='none';});}
-    renderer.render(scene,camera);
-  }
+    if(showLabel){var cw=container.clientWidth||W,ch=container.clientHeight||H;planets.forEach(function(p){if(!p.label||!p.mesh.visible){if(p.label)p.label.style.display='none';return;}p.mesh.getWorldPosition(_wp);_v.copy(_wp).project(camera);if(_v.z<1){p.label.style.display='block';p.label.style.left=(_v.x*.5+.5)*cw+'px';p.label.style.top=(-_v.y*.5+.5)*ch+'px';}else p.label.style.display='none';});}
+    renderer.render(scene,camera);}
   setMode('explore'); animate();
 })(0);
 </script>

@@ -1,0 +1,17 @@
+{
+  "name": "Hardwin Solar",
+  "short_name": "Hardwin",
+  "description": "Mô phỏng Hệ Mặt Trời 3D — khám phá, hủy diệt, tái tạo sự sống",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#060913",
+  "theme_color": "#060913",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
