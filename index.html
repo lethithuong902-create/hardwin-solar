@@ -1,1 +1,221 @@
-PLACEHOLDER
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hardwin Solar</title>
+<link rel="icon" href="/favicon.png?v=6" type="image/png">
+<script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments);};</script>
+<script defer src="/_vercel/insights/script.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<style>
+:root{--bg:#060913;--panel:rgba(13,20,38,.85);--text:#e6edf7;--muted:#8fa3c2;--accent:#fbbf24;--accent2:#38bdf8;--danger:#f87171;--life:#4ade80;--border:rgba(148,163,184,.22)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,sans-serif}
+.glass{background:var(--panel);backdrop-filter:blur(12px);border:1px solid var(--border)}
+.planet-label{position:absolute;transform:translate(-50%,-130%);font-size:11px;font-weight:600;color:#dbe7ff;text-shadow:0 0 6px #000;pointer-events:none;white-space:nowrap;padding:2px 7px;border-radius:20px;background:rgba(8,14,30,.55);border:1px solid rgba(148,163,184,.25)}
+.btn{font:600 12px system-ui;cursor:pointer;border:1px solid var(--border);color:var(--text);background:rgba(13,20,38,.7);padding:8px 12px;border-radius:10px}
+.btn.on{border-color:var(--accent2);background:rgba(56,189,248,.18)}
+.btn.mode-d.on{border-color:var(--danger);background:rgba(248,113,113,.2)}
+.btn.mode-c.on{border-color:var(--life);background:rgba(74,222,128,.2)}
+#fsBtn,#menuBtn{position:absolute;z-index:30;width:42px;height:42px;border-radius:12px;border:1px solid var(--border);background:rgba(13,20,38,.9);color:#fff;cursor:pointer;font-size:18px}
+#fsBtn{right:12px;bottom:12px}#menuBtn{right:12px;top:12px;display:none}
+body.is-fs #chrome,body.is-fs #planetNav{display:none}
+body.is-fs #viewport{position:fixed;inset:0;z-index:50;height:100%!important;border-radius:0;border:none}
+body.is-fs #menuBtn{display:block}
+#fsMenu{display:none;position:absolute;right:12px;top:60px;z-index:35;padding:10px;border-radius:14px;min-width:180px;flex-direction:column;gap:6px}
+body.is-fs #fsMenu.open{display:flex}
+#lifePanel{display:none;position:absolute;left:50%;bottom:72px;transform:translateX(-50%);z-index:25;padding:14px;border-radius:16px}
+#lifePanel.show{display:block}
+#toast{position:absolute;left:50%;bottom:64px;transform:translateX(-50%);z-index:40;padding:10px 16px;border-radius:12px;opacity:0;transition:.3s;pointer-events:none}#toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div style="max-width:72rem;margin:0 auto;padding:1rem">
+<div id="chrome">
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+<img src="/favicon.png?v=6" width="72" height="72" style="border-radius:50%" alt="H">
+<div><div style="font-size:11px;letter-spacing:.2em;color:var(--accent2)">HARDWIN SOLAR</div>
+<h1 style="margin:4px 0;font-size:clamp(18px,4vw,28px)">Bạn là <span style="color:var(--accent)">Thượng Đế</span></h1></div>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+<button class="btn on" id="modeExplore" data-mode="explore">🔭 Khám phá</button>
+<button class="btn mode-d" id="modeDestroy" data-mode="destroy">💥 Hủy diệt</button>
+<button class="btn mode-c" id="modeCreate" data-mode="create">🌱 Tái tạo</button>
+<button class="btn" id="btnReset">↺ Lặp lại</button>
+</div></div>
+<div id="viewport" style="position:relative;height:min(620px,72vh);border-radius:16px;overflow:hidden;border:1px solid var(--border)">
+<div id="canvas3d" style="width:100%;height:100%"></div>
+<div id="labels" style="position:absolute;inset:0;pointer-events:none;z-index:5"></div>
+<div class="glass" style="position:absolute;left:10px;top:10px;z-index:10;padding:8px 12px;border-radius:12px;font-size:12px">
+<div id="modeHint">Chế độ: Khám phá</div><div id="speedLabel" style="color:#bfe9ff">Tốc độ: 1.0×</div></div>
+<div style="position:absolute;right:10px;top:10px;z-index:10;display:flex;gap:6px;flex-wrap:wrap" class="hud">
+<button class="btn" id="btnPause">Tạm dừng</button>
+<button class="btn on" id="btnOrbit">Quỹ đạo</button>
+<button class="btn on" id="btnLabel">Nhãn</button>
+<button class="btn on" id="btnSound">🔊</button>
+</div>
+<div class="glass" style="position:absolute;left:10px;bottom:10px;z-index:10;padding:8px;border-radius:12px;display:flex;align-items:center;gap:8px" class="hud">
+<span style="font-size:11px;color:var(--muted)">Tốc độ</span>
+<input id="speedRange" type="range" min="0" max="100" value="20" style="width:100px">
+</div>
+<div id="weaponBar" class="glass" style="display:none;position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:12;padding:8px;border-radius:14px;gap:6px">
+<button class="btn on" data-weapon="meteor">☄️ Thiên thạch</button>
+<button class="btn" data-weapon="laser">🔦 Laser</button>
+<button class="btn" data-weapon="nova">☢️ Nova</button>
+</div>
+<div id="createBar" class="glass" style="display:none;position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:12;padding:8px;border-radius:14px;gap:6px">
+<button class="btn on" data-seed="forest">🌳 Rừng</button>
+<button class="btn" data-seed="ocean">🌊 Nước</button>
+<button class="btn" data-seed="city">🏙️ Thành phố</button>
+</div>
+<div id="lifePanel" class="glass">
+<div style="font-size:12px;margin-bottom:8px">Gieo sự sống: <b id="lifeName">—</b></div>
+<div style="display:flex;gap:6px;flex-wrap:wrap">
+<button class="btn" data-lifeseed="forest">🌳 Rừng</button>
+<button class="btn" data-lifeseed="ocean">🌊 Nước</button>
+<button class="btn" data-lifeseed="city">🏙️ Thành phố</button>
+</div>
+<button class="btn" id="lifeClose" style="margin-top:8px;width:100%">Đóng</button>
+</div>
+<button id="fsBtn" title="Phóng to">⛶</button>
+<button id="menuBtn">☰</button>
+<div id="fsMenu" class="glass">
+<button class="btn" data-mode="explore">🔭 Khám phá</button>
+<button class="btn mode-d" data-mode="destroy">💥 Hủy diệt</button>
+<button class="btn mode-c" data-mode="create">🌱 Tái tạo</button>
+<button class="btn" id="fsExit">Thu nhỏ</button>
+</div>
+<div id="toast" class="glass"></div>
+</div>
+<div id="planetNav" style="margin-top:12px;display:flex;flex-wrap:wrap;gap:6px;justify-content:center"></div>
+</div>
+<script>
+(function boot(n){
+if(typeof THREE==='undefined'||!THREE.OrbitControls){if(n<80)return setTimeout(function(){boot(n+1)},200);return;}
+var box=document.getElementById('canvas3d'),W=box.clientWidth||800,H=box.clientHeight||600;
+var renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.setSize(W,H);box.appendChild(renderer.domElement);
+var scene=new THREE.Scene();scene.background=new THREE.Color(0x03050c);
+var camera=new THREE.PerspectiveCamera(55,W/H,0.1,6000);camera.position.set(0,70,160);
+var controls=new THREE.OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.minDistance=6;controls.maxDistance=900;
+scene.add(new THREE.PointLight(0xfff0c8,2.2,0,0));scene.add(new THREE.AmbientLight(0x334455,0.45));
+function rnd(a,b){return a+Math.random()*(b-a)}
+function mkTex(w,h,fn){var c=document.createElement('canvas');c.width=w;c.height=h;fn(c.getContext('2d'),w,h);var t=new THREE.CanvasTexture(c);t.needsUpdate=true;return t;}
+function rocky(base,dark){return mkTex(512,256,function(x,w,h){x.fillStyle=base;x.fillRect(0,0,w,h);for(var i=0;i<500;i++){x.beginPath();x.arc(rnd(0,w),rnd(0,h),rnd(1,12),0,6.28);x.fillStyle=dark;x.globalAlpha=rnd(.2,.5);x.fill();}x.globalAlpha=1;});}
+function gas(bands,spot){return mkTex(512,256,function(x,w,h){var y=0,bi=0;while(y<h){var bh=rnd(6,22);x.fillStyle=bands[bi++%bands.length];x.fillRect(0,y,w,bh);y+=bh;}if(spot){x.beginPath();x.ellipse(w*.68,h*.55,28,14,0,0,6.28);x.fillStyle='#c24528';x.fill();}})}
+var sunTex=mkTex(512,256,function(x,w,h){var g=x.createRadialGradient(w/2,h/2,8,w/2,h/2,w/2);g.addColorStop(0,'#fff6c8');g.addColorStop(.45,'#ffcc44');g.addColorStop(1,'#e85a10');x.fillStyle=g;x.fillRect(0,0,w,h);});
+var earthTex=mkTex(1024,512,function(x,w,h){x.fillStyle='#0c4a8c';x.fillRect(0,0,w,h);
+var lands=[[.18,.42,.14],[.28,.38,.1],[.55,.45,.16],[.72,.35,.12],[.48,.62,.09],[.22,.55,.08],[.65,.58,.1]];
+lands.forEach(function(L){x.fillStyle='#2d8a4a';x.beginPath();x.ellipse(L[0]*w,L[1]*h,L[2]*w,L[2]*h*.55,rnd(-.3,.3),0,6.28);x.fill();});
+x.fillStyle='#e8f4ff';x.fillRect(0,0,w,h*.08);x.fillRect(0,h*.92,w,h*.08);
+x.fillStyle='rgba(255,255,255,.22)';for(var i=0;i<25;i++){x.beginPath();x.ellipse(rnd(0,w),rnd(h*.1,h*.9),rnd(20,50),rnd(6,14),0,0,6.28);x.fill();}});
+var moonTex=rocky('#c8c4b8','rgba(80,80,80,.55)');
+var sp=[],sc=[],cols=[0xffffff,0xaaccff,0xffddaa,0xffaaaa,0xccffcc,0xddaaff];
+for(var i=0;i<3000;i++){var r=rnd(900,2400),th=rnd(0,6.28),ph=Math.acos(rnd(-1,1));
+sp.push(r*Math.sin(ph)*Math.cos(th),r*Math.cos(ph),r*Math.sin(ph)*Math.sin(th));
+var c=new THREE.Color(cols[i%cols.length]);sc.push(c.r,c.g,c.b);}
+var starGeo=new THREE.BufferGeometry();starGeo.setAttribute('position',new THREE.Float32BufferAttribute(sp,3));starGeo.setAttribute('color',new THREE.Float32BufferAttribute(sc,3));
+var stars=new THREE.Points(starGeo,new THREE.PointsMaterial({size:1.5,vertexColors:true,transparent:true,opacity:.9}));scene.add(stars);
+var sun=new THREE.Mesh(new THREE.SphereGeometry(8,48,48),new THREE.MeshBasicMaterial({map:sunTex}));scene.add(sun);
+var corona=new THREE.Mesh(new THREE.SphereGeometry(10.5,32,32),new THREE.MeshBasicMaterial({color:0xffaa33,transparent:true,opacity:.18}));scene.add(corona);
+var corona2=new THREE.Mesh(new THREE.SphereGeometry(13,32,32),new THREE.MeshBasicMaterial({color:0xff6622,transparent:true,opacity:.08}));scene.add(corona2);
+var TEX={mercury:rocky('#9c8f80','rgba(60,50,40,.55)'),venus:rocky('#e0b878','rgba(160,110,50,.5)'),earth:earthTex,mars:rocky('#c25a38','rgba(100,40,20,.55)'),jupiter:gas(['#c9a06a','#e3c9a0','#b07d4e'],true),saturn:gas(['#d8c08a','#e8d8a8','#c4a868'],false),uranus:gas(['#a8e0e8','#8fd0dc'],false),neptune:gas(['#3a5fc8','#4a72d8'],false)};
+var PD=[{id:'sun',vi:'Mặt Trời',radius:8,dist:0,speed:0,rot:.002},{id:'mercury',vi:'Sao Thủy',radius:1.2,dist:18,speed:.045,rot:.004},{id:'venus',vi:'Sao Kim',radius:1.9,dist:26,speed:.035,rot:.002},{id:'earth',vi:'Trái Đất',radius:2,dist:35,speed:.028,rot:.02,moon:true},{id:'mars',vi:'Sao Hỏa',radius:1.5,dist:45,speed:.022,rot:.018},{id:'jupiter',vi:'Sao Mộc',radius:4.6,dist:66,speed:.011,rot:.04},{id:'saturn',vi:'Sao Thổ',radius:3.9,dist:92,speed:.0075,rot:.038,ring:true},{id:'uranus',vi:'Thiên Vương',radius:2.9,dist:118,speed:.0052,rot:.03},{id:'neptune',vi:'Hải Vương',radius:2.8,dist:142,speed:.004,rot:.032},{id:'moon',vi:'Mặt Trăng',radius:.55,dist:0,speed:0,rot:.01}];
+var planets=[],orbits=[],clickables=[],projectiles=[],effects=[],labels=document.getElementById('labels');
+PD.forEach(function(d){if(d.id==='moon')return;
+var pivot=new THREE.Object3D();scene.add(pivot);var group=new THREE.Object3D();group.position.x=d.dist;pivot.add(group);
+var mesh=d.id==='sun'?sun:new THREE.Mesh(new THREE.SphereGeometry(d.radius,32,32),new THREE.MeshStandardMaterial({map:TEX[d.id],roughness:.72}));
+if(d.id!=='sun')group.add(mesh);
+if(d.ring){var rg=new THREE.Mesh(new THREE.RingGeometry(d.radius*1.35,d.radius*2.3,64),new THREE.MeshBasicMaterial({color:0xc9b896,side:THREE.DoubleSide,transparent:true,opacity:.7}));rg.rotation.x=-Math.PI/2;group.add(rg);}
+if(d.moon){var mp=new THREE.Object3D();group.add(mp);var mm=new THREE.Mesh(new THREE.SphereGeometry(.55,24,24),new THREE.MeshStandardMaterial({map:moonTex,roughness:1}));mm.position.x=3.5;mp.add(mm);d._moonPivot=mp;
+var mo={data:PD.find(function(x){return x.id==='moon'}),mesh:mm,label:null,destroyed:false,life:null,isMoon:true};mm.userData.planet=mo;clickables.push(mm);
+var mlb=document.createElement('div');mlb.className='planet-label';mlb.textContent='Mặt Trăng';labels.appendChild(mlb);mo.label=mlb;planets.push(mo);}
+if(d.dist>0){var pts=[];for(var i=0;i<96;i++){var a=i/96*Math.PI*2;pts.push(new THREE.Vector3(Math.cos(a)*d.dist,0,Math.sin(a)*d.dist));}
+var line=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts),new THREE.LineBasicMaterial({color:0x3d5278,transparent:true,opacity:.35}));scene.add(line);orbits.push(line);}
+var lb=document.createElement('div');lb.className='planet-label';lb.textContent=d.vi;labels.appendChild(lb);
+var obj={data:d,pivot:pivot,group:group,mesh:mesh,label:lb,destroyed:false,life:null,lifeMesh:null};mesh.userData.planet=obj;planets.push(obj);clickables.push(mesh);pivot.rotation.y=Math.random()*6.28;});
+var soundOn=true,actx=null;
+function audio(){if(!actx)try{actx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}return actx;}
+function beep(type,dur,freq,vol){if(!soundOn)return;var c=audio();if(!c)return;if(c.state==='suspended')c.resume();
+var o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.value=freq;g.gain.value=vol||.08;o.connect(g);g.connect(c.destination);o.start();g.gain.exponentialRampToValueAtTime(.001,c.currentTime+dur);o.stop(c.currentTime+dur+.05);}
+function boom(){beep('sawtooth',.45,55,.12);setTimeout(function(){beep('square',.2,40,.08)},80);}
+function water(){beep('sine',.6,220,.06);}
+var mode='explore',weapon='meteor',seed='forest',paused=false,speed=1,showOrbit=true,showLabel=true,isFs=false;
+var fly={a:false,t:0,fp:new THREE.Vector3(),ft:new THREE.Vector3(),tp:new THREE.Vector3(),tt:new THREE.Vector3()};
+var _v=new THREE.Vector3(),_wp=new THREE.Vector3(),_d=new THREE.Vector3(),clock=new THREE.Clock(),pending=null;
+function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},2200);}
+function setMode(m){mode=m;document.querySelectorAll('[data-mode]').forEach(function(b){b.classList.toggle('on',b.dataset.mode===m);});
+document.getElementById('weaponBar').style.display=(!isFs&&m==='destroy')?'flex':'none';
+document.getElementById('createBar').style.display=(!isFs&&m==='create')?'flex':'none';
+document.getElementById('modeHint').textContent='Chế độ: '+(m==='explore'?'Khám phá':m==='destroy'?'Hủy diệt':'Tái tạo');
+document.getElementById('lifePanel').classList.remove('show');}
+['modeExplore','modeDestroy','modeCreate'].forEach(function(id){document.getElementById(id).onclick=function(){setMode(this.dataset.mode);};});
+document.querySelectorAll('#fsMenu [data-mode]').forEach(function(b){b.onclick=function(){setMode(b.dataset.mode);document.getElementById('fsMenu').classList.remove('open');};});
+document.querySelectorAll('[data-weapon]').forEach(function(b){b.onclick=function(){weapon=b.dataset.weapon;document.querySelectorAll('[data-weapon]').forEach(function(x){x.classList.toggle('on',x===b);});};});
+document.querySelectorAll('[data-seed]').forEach(function(b){b.onclick=function(){seed=b.dataset.seed;document.querySelectorAll('[data-seed]').forEach(function(x){x.classList.toggle('on',x===b);});};});
+function burst(pos,color,n,spd){var geo=new THREE.BufferGeometry(),a=[];for(var i=0;i<n;i++)a.push(pos.x,pos.y,pos.z);geo.setAttribute('position',new THREE.Float32BufferAttribute(a,3));
+var pts=new THREE.Points(geo,new THREE.PointsMaterial({color:color,size:1.4,transparent:true,opacity:1}));scene.add(pts);
+var vels=[];for(var j=0;j<n;j++)vels.push(new THREE.Vector3(rnd(-1,1),rnd(-1,1),rnd(-1,1)).normalize().multiplyScalar(rnd(spd||6,(spd||6)*2)));
+effects.push({mesh:pts,vels:vels,life:1.2});}
+function finishDestroy(p,w){if(p.destroyed)return;p.mesh.getWorldPosition(_wp);burst(_wp,0xf87171,55,12);burst(_wp,0xffaa44,30,8);
+for(var i=0;i<8;i++){var ch=new THREE.Mesh(new THREE.BoxGeometry(rnd(.2,.5),rnd(.2,.5),rnd(.2,.5)),new THREE.MeshBasicMaterial({color:0x884422}));ch.position.copy(_wp);scene.add(ch);effects.push({mesh:ch,vels:[new THREE.Vector3(rnd(-1,1),rnd(-1,1),rnd(-1,1)).normalize().multiplyScalar(rnd(4,12))],life:1.5,chunk:true});}
+p.destroyed=true;p.mesh.visible=false;if(p.lifeMesh){p.mesh.remove(p.lifeMesh);p.lifeMesh=null;}p.life=null;boom();toast(p.data.vi+' đã vỡ vụn!');}
+function destroyPlanet(p){if(p.data.id==='sun'){toast('Không hủy Mặt Trời');return;}if(p.destroyed){toast('Đã hủy');return;}
+if(weapon==='meteor'){p.mesh.getWorldPosition(_wp);var start=_wp.clone().add(new THREE.Vector3(rnd(18,28),rnd(12,20),rnd(8,16)));
+var met=new THREE.Mesh(new THREE.SphereGeometry(.55,10,10),new THREE.MeshBasicMaterial({color:0xff8844}));met.position.copy(start);scene.add(met);
+projectiles.push({mesh:met,target:p,t:0,start:start.clone(),end:_wp.clone(),kind:'meteor'});toast('☄️ Thiên thạch lao tới '+p.data.vi);}
+else if(weapon==='laser'){p.mesh.getWorldPosition(_wp);var beam=new THREE.Mesh(new THREE.CylinderGeometry(.15,.15,1,8),new THREE.MeshBasicMaterial({color:0x44ffaa,transparent:true,opacity:.85}));beam.position.copy(_wp);scene.add(beam);projectiles.push({mesh:beam,target:p,t:0,kind:'laser'});toast('🔦 Laser!');}
+else{p.mesh.getWorldPosition(_wp);burst(_wp,0xffee88,50,10);boom();finishDestroy(p,'nova');}}
+function addLife(p,kind){if(p.lifeMesh){p.mesh.remove(p.lifeMesh);p.lifeMesh=null;}var g=new THREE.Group();
+if(kind==='forest'){for(var i=0;i<12;i++){var t=new THREE.Mesh(new THREE.ConeGeometry(.12,.35,6),new THREE.MeshBasicMaterial({color:0x33aa44}));var a=i/12*Math.PI*2;t.position.set(Math.cos(a)*(p.data.radius+.15),0,Math.sin(a)*(p.data.radius+.15));g.add(t);}}
+if(kind==='ocean'){g.add(new THREE.Mesh(new THREE.SphereGeometry(p.data.radius*1.05,24,24),new THREE.MeshBasicMaterial({color:0x2288cc,transparent:true,opacity:.35})));}
+if(kind==='city'){for(var i=0;i<10;i++){var b=new THREE.Mesh(new THREE.BoxGeometry(.1,rnd(.15,.35),.1),new THREE.MeshBasicMaterial({color:0xffcc66}));var a=i/10*Math.PI*2;b.position.set(Math.cos(a)*(p.data.radius+.08),.1,Math.sin(a)*(p.data.radius+.08));g.add(b);}}
+p.mesh.add(g);p.lifeMesh=g;p.life=kind;}
+function seedPlanet(p,kind){if(p.data.id==='sun'||p.destroyed){toast('Không gieo được');return;}kind=kind||seed;addLife(p,kind);p.mesh.getWorldPosition(_wp);burst(_wp,0x4ade80,28,6);if(kind==='ocean')water();else beep('triangle',.3,320,.05);toast('Đã gieo lên '+p.data.vi);}
+function reset(){planets.forEach(function(p){p.destroyed=false;p.life=null;p.mesh.visible=true;if(p.lifeMesh){p.mesh.remove(p.lifeMesh);p.lifeMesh=null;}});toast('Khôi phục hệ thống');setMode('explore');}
+document.getElementById('btnReset').onclick=reset;
+function flyTo(p){p.mesh.getWorldPosition(_wp);_d.subVectors(camera.position,_wp).normalize();var off=(p.data.radius||1)*5+4;_v.copy(_wp).addScaledVector(_d,off);_v.y+=(p.data.radius||1);
+fly.fp.copy(camera.position);fly.ft.copy(controls.target);fly.tp.copy(_v);fly.tt.copy(_wp);fly.t=0;fly.a=true;controls.enabled=false;
+if(mode==='explore')toast(p.data.vi);else if(mode==='destroy')destroyPlanet(p);else{pending=p;document.getElementById('lifeName').textContent=p.data.vi;document.getElementById('lifePanel').classList.add('show');}}
+document.querySelectorAll('[data-lifeseed]').forEach(function(b){b.onclick=function(){if(pending)seedPlanet(pending,b.dataset.lifeseed);document.getElementById('lifePanel').classList.remove('show');};});
+document.getElementById('lifeClose').onclick=function(){document.getElementById('lifePanel').classList.remove('show');};
+var nav=document.getElementById('planetNav');
+PD.forEach(function(d){var b=document.createElement('button');b.className='btn';b.textContent=d.vi;b.onclick=function(){var p=planets.find(function(x){return x.data.id===d.id});if(p)flyTo(p);};nav.appendChild(b);});
+document.getElementById('btnPause').onclick=function(){paused=!paused;this.textContent=paused?'Tiếp tục':'Tạm dừng';};
+document.getElementById('btnOrbit').onclick=function(){showOrbit=!showOrbit;this.classList.toggle('on',showOrbit);orbits.forEach(function(l){l.visible=showOrbit;});};
+document.getElementById('btnLabel').onclick=function(){showLabel=!showLabel;this.classList.toggle('on',showLabel);labels.style.display=showLabel?'block':'none';};
+document.getElementById('btnSound').onclick=function(){soundOn=!soundOn;this.classList.toggle('on',soundOn);this.textContent=soundOn?'🔊':'🔇';};
+function setFs(on){isFs=on;document.body.classList.toggle('is-fs',on);document.getElementById('fsMenu').classList.remove('open');
+setTimeout(function(){W=box.clientWidth;H=box.clientHeight;camera.aspect=W/H;camera.updateProjectionMatrix();renderer.setSize(W,H);},40);setMode(mode);}
+document.getElementById('fsBtn').onclick=function(){setFs(!isFs);};
+document.getElementById('menuBtn').onclick=function(){document.getElementById('fsMenu').classList.toggle('open');};
+document.getElementById('fsExit').onclick=function(){setFs(false);};
+var sr=document.getElementById('speedRange');
+function updSp(){speed=.1+parseInt(sr.value,10)/100*7;document.getElementById('speedLabel').textContent='Tốc độ: '+speed.toFixed(1)+'×';}sr.oninput=updSp;updSp();
+var ray=new THREE.Raycaster(),mouse=new THREE.Vector2(),dx=0,dy=0,dom=renderer.domElement;
+dom.addEventListener('pointerdown',function(e){dx=e.clientX;dy=e.clientY;audio();});
+dom.addEventListener('pointerup',function(e){if(Math.abs(e.clientX-dx)>6||Math.abs(e.clientY-dy)>6)return;
+var r=dom.getBoundingClientRect();mouse.x=((e.clientX-r.left)/r.width)*2-1;mouse.y=-((e.clientY-r.top)/r.height)*2+1;
+ray.setFromCamera(mouse,camera);var hits=ray.intersectObjects(clickables,false);if(hits.length&&hits[0].object.userData.planet)flyTo(hits[0].object.userData.planet);});
+window.addEventListener('resize',function(){W=box.clientWidth;H=box.clientHeight;if(!W||!H)return;camera.aspect=W/H;camera.updateProjectionMatrix();renderer.setSize(W,H);});
+function sm(t){return t*t*(3-2*t)}
+function animate(){requestAnimationFrame(animate);var dt=Math.min(clock.getDelta(),.05);
+var pulse=1+Math.sin(clock.elapsedTime*1.5)*.03;corona.scale.setScalar(pulse);corona2.scale.setScalar(pulse*1.02);
+corona.material.opacity=.14+Math.sin(clock.elapsedTime*2)*.04;stars.rotation.y+=dt*.003;
+if(!paused){sun.rotation.y+=.002*dt*60*speed;planets.forEach(function(p){if(p.isMoon)return;if(p.data.dist>0&&p.pivot)p.pivot.rotation.y+=p.data.speed*dt*60*speed*.5;if(p.mesh)p.mesh.rotation.y+=p.data.rot*dt*60*speed*.5;if(p.data._moonPivot)p.data._moonPivot.rotation.y+=.05*dt*60*speed*.5;if(p.lifeMesh)p.lifeMesh.rotation.y+=dt*.4;});}
+for(var i=projectiles.length-1;i>=0;i--){var pr=projectiles[i];pr.t+=dt*(pr.kind==='laser'?2.5:1.1);
+if(pr.kind==='meteor'){var s=Math.min(1,pr.t);pr.mesh.position.lerpVectors(pr.start,pr.end,s);if(s>=1){finishDestroy(pr.target,'meteor');scene.remove(pr.mesh);projectiles.splice(i,1);}}
+else if(pr.kind==='laser'){pr.mesh.scale.set(1,8+pr.t*20,1);if(pr.t>.6){finishDestroy(pr.target,'laser');scene.remove(pr.mesh);projectiles.splice(i,1);}}}
+if(fly.a){fly.t=Math.min(1,fly.t+dt*1.4);var s=sm(fly.t);camera.position.lerpVectors(fly.fp,fly.tp,s);controls.target.lerpVectors(fly.ft,fly.tt,s);if(fly.t>=1){fly.a=false;controls.enabled=true;}}
+for(var ei=effects.length-1;ei>=0;ei--){var e=effects[ei];e.life-=dt*1.1;
+if(e.chunk){e.mesh.position.addScaledVector(e.vels[0],dt*8);e.mesh.rotation.x+=dt*3;}
+else{var pos=e.mesh.geometry.attributes.position;for(var k=0;k<e.vels.length;k++){pos.array[k*3]+=e.vels[k].x*dt*8;pos.array[k*3+1]+=e.vels[k].y*dt*8;pos.array[k*3+2]+=e.vels[k].z*dt*8;}pos.needsUpdate=true;e.mesh.material.opacity=Math.max(0,e.life);}
+if(e.life<=0){scene.remove(e.mesh);effects.splice(ei,1);}}
+controls.update();
+if(showLabel){var cw=box.clientWidth||W,ch=box.clientHeight||H;planets.forEach(function(p){if(!p.label||!p.mesh.visible){if(p.label)p.label.style.display='none';return;}p.mesh.getWorldPosition(_wp);_v.copy(_wp).project(camera);if(_v.z<1){p.label.style.display='block';p.label.style.left=(_v.x*.5+.5)*cw+'px';p.label.style.top=(-_v.y*.5+.5)*ch+'px';}else p.label.style.display='none';});}
+renderer.render(scene,camera);}
+setMode('explore');animate();
+})(0);
+</script>
+</body>
+</html>
