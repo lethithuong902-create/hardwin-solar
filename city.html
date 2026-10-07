@@ -49,18 +49,18 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0b1520;font-family:
 <a class="back" href="/">← Hardwin</a>
 <button type="button" id="menuBtn" aria-label="Menu">☰</button>
 <div id="menu">
-  <h4>Vũ khí</h4>
-  <button type="button" class="w on" data-gun="pistol">🔫 Pistol Hardwin</button>
+  <h4>Vũ khí (nhặt trên nóc nhà)</h4>
+  <button type="button" class="w on" data-gun="pistol">🔫 Súng nhỏ (mặc định)</button>
   <button type="button" class="w" data-gun="smg">⚡ SMG Plasma</button>
   <button type="button" class="w" data-gun="rifle">🎯 Rifle Sniper</button>
   <button type="button" class="w" data-gun="rail">💫 Railgun Nova</button>
   <h4>Điều khiển</h4>
-  <div style="font-size:13px;opacity:.85;line-height:1.5">Joystick / WASD · Nhảy · Bắn · Xe · Vào nhà (nút hoặc E)</div>
+  <div style="font-size:13px;opacity:.85;line-height:1.55">WASD / Joystick · Nhảy lên gờ tường để lên nóc · E nhặt loot · G ném lựu đạn · F xe</div>
 </div>
 <div id="top"><img src="/favicon.png?v=6" alt="H"><div class="brand">HARDWIN · OPEN CITY</div></div>
 <div id="hud">
-  <div class="row" id="mode">🚶 Đi bộ</div>
-  <div class="row" id="gunLabel">🔫 Pistol Hardwin</div>
+  <div class="row" id="mode">Đi bộ</div>
+  <div class="row" id="gunLabel">🔫 Súng nhỏ</div>
   <div class="row" id="spd">0 km/h</div>
   <div class="row" style="opacity:.9;margin-top:8px">Máu</div>
   <div id="hpWrap"><div id="hpBar"></div></div>
@@ -69,11 +69,11 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0b1520;font-family:
 <div id="joyZone"><div id="joyBase"><div id="joyKnob"></div></div></div>
 <div id="btns">
   <button type="button" id="btnShoot">BẮN</button>
-  <button type="button" id="btnEnter">🏢</button>
+  <button type="button" id="btnEnter">E</button>
   <button type="button" id="btnCar">🚗</button>
   <button type="button" id="btnJump">⬆</button>
 </div>
-<div id="prompt">🏢 Vào tòa nhà</div>
+<div id="prompt">E — Nhặt / Vào</div>
 <div id="toast"></div>
 <canvas id="c"></canvas>
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
