@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Hardwin Solar</title>
+<link rel="icon" href="/favicon.png?v=6" type="image/png">
+<script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments);};</script>
+<script defer src="/_vercel/insights/script.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<style>
+:root{--bg:#060913;--panel:rgba(10,16,32,.92);--text:#e8eef8;--muted:#8fa3c2;--accent:#fbbf24;--accent2:#38bdf8;--danger:#f87171;--life:#4ade80;--border:rgba(148,163,184,.25)}
+*{box-sizing:border-box}html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:system-ui,sans-serif}
+.glass{background:var(--panel);backdrop-filter:blur(14px);border:1px solid var(--border)}
+.planet-label{position:absolute;transform:translate(-50%,-130%);font-size:11px;font-weight:600;color:#dbe7ff;text-shadow:0 0 6px #000;pointer-events:none;white-space:nowrap;padding:2px 7px;border-radius:20px;background:rgba(8,14,30,.55);border:1px solid rgba(148,163,184,.25)}
+.btn{font:600 12px system-ui;cursor:pointer;border:1px solid var(--border);color:var(--text);background:rgba(13,20,38,.75);padding:8px 12px;border-radius:10px;text-align:left}
+.btn.on{border-color:var(--accent2);background:rgba(56,189,248,.2)}
+.btn.danger.on{border-color:var(--danger);background:rgba(248,113,113,.2)}
+.btn.life.on{border-color:var(--life);background:rgba(74,222,128,.2)}
+#wrap{max-width:72rem;margin:0 auto;padding:1rem}
+#viewport{position:relative;width:100%;height:min(68vh,620px);border-radius:16px;overflow:hidden;border:1px solid var(--border);background:#03050c}
+body.fs #chrome,body.fs #planetNav{display:none!important}
+body.fs #wrap{margin:0;padding:0;max-width:none}
+body.fs #viewport{position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;height:100dvh!important;border-radius:0!important;border:none!important;z-index:100}
+#canvas3d{width:100%;height:100%}
+#menuBtn{position:absolute;right:12px;top:12px;z-index:120;width:44px;height:44px;border-radius:12px;border:1px solid var(--border);background:rgba(13,20,38,.95);color:#fff;font-size:20px;cursor:pointer}
+#fsBtn{position:absolute;right:12px;bottom:12px;z-index:120;width:44px;height:44px;border-radius:12px;border:1px solid var(--border);background:rgba(13,20,38,.95);color:#fff;font-size:18px;cursor:pointer}
+#menu{display:none;position:absolute;right:12px;top:64px;z-index:130;width:min(280px,calc(100% - 24px));max-height:min(70vh,520px);overflow:auto;padding:12px;border-radius:16px;flex-direction:column;gap:6px}
+#menu.open{display:flex}
+#menu h4{margin:8px 0 4px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+#toast{position:absolute;left:50%;bottom:70px;transform:translateX(-50%);z-index:140;padding:10px 16px;border-radius:12px;opacity:0;transition:.3s;pointer-events:none;font-size:13px}#toast.show{opacity:1}
+#hint{position:absolute;left:12px;top:12px;z-index:110;padding:8px 12px;border-radius:12px;font-size:12px}
+.back{position:fixed;left:10px;top:10px;z-index:200;font:600 12px system-ui;color:#38bdf8;text-decoration:none;background:rgba(10,16,32,.9);padding:6px 10px;border-radius:8px;border:1px solid rgba(148,163,184,.3)}
+</style>
+</head>
+<body>
+<a class="back" href="/">← Hardwin</a>
+<div id="wrap">
+<div id="chrome" style="margin-bottom:12px">
+<div style="display:flex;align-items:center;gap:12px">
+<img src="/favicon.png?v=6" width="64" height="64" style="border-radius:50%" alt="H">
+<div><div style="font-size:11px;letter-spacing:.2em;color:var(--accent2)">HARDWIN SOLAR</div>
+<h1 style="margin:4px 0;font-size:clamp(18px,4vw,26px)">Bạn là <span style="color:var(--accent)">Thượng Đế</span></h1>
+<p style="margin:0;color:var(--muted);font-size:13px">Phóng to → Menu chọn vũ khí / sự sống. Bấm hành tinh để hành động.</p></div>
+</div></div>
+<div id="viewport">
+<div id="canvas3d"></div>
+<div id="labels" style="position:absolute;inset:0;pointer-events:none;z-index:5"></div>
+<div id="hint" class="glass"><div id="modeHint">Chế độ: Khám phá</div><div id="subHint" style="color:#bfe9ff;margin-top:2px">Vũ khí: Thiên thạch</div></div>
+<button id="menuBtn" type="button" title="Menu">☰</button>
+<button id="fsBtn" type="button" title="Phóng to">⛶</button>
+<div id="menu" class="glass">
+<h4>Chế độ</h4>
+<button class="btn on" data-mode="explore">🔭 Khám phá</button>
+<button class="btn danger" data-mode="destroy">💥 Hủy diệt</button>
+<button class="btn life" data-mode="create">🌱 Tái tạo sự sống</button>
+<h4>Vũ khí hủy diệt</h4>
+<button class="btn on" data-weapon="meteor">☄️ Thiên thạch</button>
+<button class="btn" data-weapon="laser">🔦 Laser</button>
+<button class="btn" data-weapon="gamma">☢️ Tia gamma</button>
+<button class="btn" data-weapon="alien">👽 Hạm đội ngoài hành tinh</button>
+<button class="btn" data-weapon="nova">💥 Siêu tân tinh</button>
+<h4>Gieo sự sống</h4>
+<button class="btn on" data-seed="forest">🌳 Rừng</button>
+<button class="btn" data-seed="ocean">🌊 Đại dương</button>
+<button class="btn" data-seed="city">🏙️ Thành phố</button>
+<button class="btn" data-seed="farm">🌾 Nông trại</button>
+<button class="btn" data-seed="animal">🦌 Động vật</button>
+<button class="btn" data-seed="atmo">🌫️ Khí quyển</button>
+<h4>Điều khiển</h4>
+<button class="btn" id="btnPause">⏸ Tạm dừng</button>
+<button class="btn on" id="btnOrbit">◎ Quỹ đạo</button>
+<button class="btn on" id="btnLabel">🏷 Nhãn</button>
+<button class="btn on" id="btnSound">🔊 Âm thanh</button>
+<label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px;padding:4px 0">Tốc độ <input id="speedRange" type="range" min="0" max="100" value="20" style="flex:1"></label>
+<button class="btn" id="btnReset">↺ Khôi phục ban đầu</button>
+<button class="btn" id="btnExitFs">⛶ Thu nhỏ màn hình</button>
+</div>
+<div id="toast" class="glass"></div>
+</div>
+<div id="planetNav" style="margin-top:12px;display:flex;flex-wrap:wrap;gap:6px;justify-content:center"></div>
+</div>
+<script src="/game.js"></script>
+</body>
+</html>
