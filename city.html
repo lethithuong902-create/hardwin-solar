@@ -1,1 +1,82 @@
-PLACEHOLDER
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Hardwin · Open City</title>
+<link rel="icon" href="/favicon.png?v=6" type="image/png">
+<link rel="apple-touch-icon" href="/favicon.png?v=6">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#0b1520;font-family:system-ui,sans-serif;color:#e8eef8;touch-action:none;user-select:none;-webkit-user-select:none}
+#c{position:fixed;inset:0;width:100%;height:100%;display:block;background:#4a9fd4}
+.back{position:fixed;left:12px;top:12px;z-index:60;font:700 13px system-ui;color:#38bdf8;text-decoration:none;background:rgba(8,14,28,.95);padding:10px 14px;border-radius:10px;border:1px solid rgba(56,189,248,.4)}
+#top{position:fixed;left:50%;top:10px;transform:translateX(-50%);z-index:50;display:flex;align-items:center;gap:10px;pointer-events:none}
+#top img{width:44px;height:44px;border-radius:50%;border:2px solid rgba(56,189,248,.55);box-shadow:0 0 16px rgba(56,189,248,.3)}
+#top .brand{font-size:12px;letter-spacing:.22em;color:#38bdf8;font-weight:700}
+#hud{position:fixed;left:12px;top:64px;z-index:50;background:rgba(8,14,28,.94);border:1px solid rgba(148,163,184,.35);border-radius:16px;padding:14px 16px;min-width:180px;font-size:14px;box-shadow:0 8px 28px rgba(0,0,0,.35)}
+#hud .row{margin:4px 0}
+#hpWrap{height:14px;background:rgba(255,255,255,.12);border-radius:8px;margin-top:10px;overflow:hidden}
+#hpBar{height:100%;width:100%;background:linear-gradient(90deg,#16a34a,#4ade80);border-radius:8px;transition:width .15s}
+#hpBar.mid{background:linear-gradient(90deg,#ca8a04,#fbbf24)}
+#hpBar.low{background:linear-gradient(90deg,#dc2626,#f87171)}
+#cross{position:fixed;left:50%;top:48%;width:18px;height:18px;margin:-9px 0 0 -9px;border:2px solid rgba(255,255,255,.75);border-radius:50%;z-index:20;pointer-events:none;box-shadow:0 0 8px rgba(0,0,0,.4)}
+#joyZone{position:fixed;left:20px;bottom:28px;z-index:55;width:150px;height:150px}
+#joyBase{width:150px;height:150px;border-radius:50%;background:rgba(15,23,42,.6);border:3px solid rgba(148,163,184,.45);position:relative;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+#joyKnob{width:62px;height:62px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#7dd3fc,#0284c7);border:3px solid #fff;position:absolute;left:44px;top:44px;box-shadow:0 4px 16px rgba(0,0,0,.4)}
+#btns{position:fixed;right:16px;bottom:28px;z-index:55;display:flex;flex-direction:column;gap:12px;align-items:flex-end}
+#btns button{width:72px;height:72px;border-radius:50%;border:3px solid rgba(148,163,184,.5);background:rgba(15,23,42,.85);color:#fff;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.4)}
+#btnShoot{width:84px;height:84px;background:rgba(220,38,38,.55);border-color:rgba(248,113,113,.8);font-size:15px}
+#btnJump{background:rgba(22,163,74,.45);border-color:rgba(74,222,128,.7)}
+#btnCar{background:rgba(2,132,199,.45);border-color:rgba(56,189,248,.7)}
+#btnEnter{background:rgba(168,85,247,.4);border-color:rgba(192,132,252,.7)}
+#menuBtn{position:fixed;right:16px;top:12px;z-index:60;width:52px;height:52px;border-radius:14px;border:2px solid rgba(148,163,184,.45);background:rgba(8,14,28,.95);color:#fff;font-size:20px;cursor:pointer}
+#menu{display:none;position:fixed;right:16px;top:72px;z-index:65;width:min(280px,calc(100vw - 32px));background:rgba(8,14,28,.97);border:1px solid rgba(148,163,184,.4);border-radius:16px;padding:14px;max-height:70vh;overflow:auto}
+#menu.open{display:block}
+#menu h4{font-size:11px;letter-spacing:.1em;color:#94a3b8;margin:10px 0 8px;text-transform:uppercase}
+#menu .w{display:block;width:100%;text-align:left;margin:5px 0;padding:12px;border-radius:12px;border:1px solid rgba(148,163,184,.25);background:rgba(30,41,59,.8);color:#e8eef8;font-size:14px;cursor:pointer;font-weight:600}
+#menu .w.on{border-color:#38bdf8;background:rgba(56,189,248,.22)}
+#prompt{position:fixed;left:50%;bottom:190px;transform:translateX(-50%);z-index:45;background:rgba(8,14,28,.92);padding:12px 18px;border-radius:12px;font-size:15px;font-weight:600;opacity:0;transition:.2s;pointer-events:none;border:1px solid rgba(168,85,247,.5)}
+#prompt.show{opacity:1}
+#toast{position:fixed;left:50%;top:36%;transform:translate(-50%,-50%);z-index:70;background:rgba(8,14,28,.96);padding:16px 24px;border-radius:16px;opacity:0;transition:.3s;pointer-events:none;text-align:center;font-size:16px;font-weight:600;border:1px solid rgba(148,163,184,.35)}
+#toast.show{opacity:1}
+#load{position:fixed;inset:0;z-index:100;background:#0b1520;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;font-size:15px}
+#load.hide{display:none}
+</style>
+</head>
+<body>
+<div id="load"><img src="/favicon.png?v=6" width="64" height="64" style="border-radius:50%"><div>Hardwin Open City đang tải…</div></div>
+<a class="back" href="/">← Hardwin</a>
+<button type="button" id="menuBtn" aria-label="Menu">☰</button>
+<div id="menu">
+  <h4>Vũ khí</h4>
+  <button type="button" class="w on" data-gun="pistol">🔫 Pistol Hardwin</button>
+  <button type="button" class="w" data-gun="smg">⚡ SMG Plasma</button>
+  <button type="button" class="w" data-gun="rifle">🎯 Rifle Sniper</button>
+  <button type="button" class="w" data-gun="rail">💫 Railgun Nova</button>
+  <h4>Điều khiển</h4>
+  <div style="font-size:13px;opacity:.85;line-height:1.5">Joystick / WASD · Nhảy · Bắn · Xe · Vào nhà (nút hoặc E)</div>
+</div>
+<div id="top"><img src="/favicon.png?v=6" alt="H"><div class="brand">HARDWIN · OPEN CITY</div></div>
+<div id="hud">
+  <div class="row" id="mode">🚶 Đi bộ</div>
+  <div class="row" id="gunLabel">🔫 Pistol Hardwin</div>
+  <div class="row" id="spd">0 km/h</div>
+  <div class="row" style="opacity:.9;margin-top:8px">Máu</div>
+  <div id="hpWrap"><div id="hpBar"></div></div>
+</div>
+<div id="cross"></div>
+<div id="joyZone"><div id="joyBase"><div id="joyKnob"></div></div></div>
+<div id="btns">
+  <button type="button" id="btnShoot">BẮN</button>
+  <button type="button" id="btnEnter">🏢</button>
+  <button type="button" id="btnCar">🚗</button>
+  <button type="button" id="btnJump">⬆</button>
+</div>
+<div id="prompt">🏢 Vào tòa nhà</div>
+<div id="toast"></div>
+<canvas id="c"></canvas>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="/city-game.js"></script>
+</body>
+</html>
