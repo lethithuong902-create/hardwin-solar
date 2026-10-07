@@ -189,8 +189,8 @@ function animate(){
     var sp=inCar?(sprint?26:15):(sprint?9:4.6);
     var mv=new THREE.Vector3();
     if(keys.KeyW||keys.ArrowUp)mv.add(fwd);if(keys.KeyS||keys.ArrowDown)mv.sub(fwd);
-    if(keys.KeyA||keys.ArrowLeft)mv.sub(right);if(keys.KeyD||keys.ArrowRight)mv.add(right);
-    if(joy.active&&(Math.abs(joy.x)>0.08||Math.abs(joy.y)>0.08)){mv.addScaledVector(fwd,joy.y);mv.addScaledVector(right,joy.x);}
+    if(keys.KeyA||keys.ArrowLeft)mv.add(right);if(keys.KeyD||keys.ArrowRight)mv.sub(right);
+    if(joy.active&&(Math.abs(joy.x)>0.08||Math.abs(joy.y)>0.08)){mv.addScaledVector(fwd,joy.y);mv.addScaledVector(right,-joy.x);}
     var moving=mv.lengthSq()>0.0001;
     if(moving){mv.normalize();faceYaw=Math.atan2(mv.x,mv.z);mv.multiplyScalar(sp*dt);var nx=player.position.x+mv.x,nz=player.position.z+mv.z;if(!blocked(nx,nz,inCar?1.2:0.45)){player.position.x=nx;player.position.z=nz;}}
     if(keys.Space&&onGround&&!inCar){vy=8.5;onGround=false;}
