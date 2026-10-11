@@ -1,1 +1,118 @@
-PLACEHOLDER_SOLAR
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<title>Hardwin Solar</title>
+<link rel="icon" href="/favicon.png?v=6" type="image/png">
+<script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments);};</script>
+<script defer src="/_vercel/insights/script.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<style>
+:root{--bg:#060913;--card:rgba(13,20,38,.92);--text:#e8eef8;--muted:#8fa3c2;--accent:#fbbf24;--accent2:#38bdf8;--border:rgba(148,163,184,.28);--danger:#f87171;--life:#4ade80}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;touch-action:manipulation}
+#wrap{max-width:1100px;margin:0 auto;padding:1rem}
+.btn{font:600 12px system-ui;cursor:pointer;border:1px solid var(--border);color:var(--text);background:rgba(13,20,38,.75);padding:8px 12px;border-radius:10px;text-align:left}
+.btn.on{border-color:var(--accent2);background:rgba(56,189,248,.2)}
+.btn.danger.on{border-color:var(--danger);background:rgba(248,113,113,.2)}
+.btn.life.on{border-color:var(--life);background:rgba(74,222,128,.2)}
+.glass{background:var(--card);border:1px solid var(--border);backdrop-filter:blur(10px)}
+#viewport{position:relative;width:100%;height:min(70vh,620px);border-radius:16px;overflow:hidden;border:1px solid var(--border);background:#02040a}
+#canvas3d{width:100%;height:100%}#canvas3d canvas{display:block;width:100%!important;height:100%!important}
+#menuBtn{position:absolute;right:12px;top:12px;z-index:120;width:44px;height:44px;border-radius:12px;border:1px solid var(--border);background:rgba(13,20,38,.95);color:#fff;font-size:20px;cursor:pointer}
+#fsBtn{position:absolute;right:64px;top:12px;z-index:120;width:44px;height:44px;border-radius:12px;border:1px solid var(--border);background:rgba(13,20,38,.95);color:#fff;font-size:18px;cursor:pointer}
+#menu{display:none;position:absolute;right:12px;top:64px;z-index:130;width:min(280px,calc(100% - 24px));max-height:min(70vh,520px);overflow:auto;padding:12px;border-radius:16px;flex-direction:column;gap:6px}
+#menu.open{display:flex}
+#menu h4{margin:8px 0 4px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+#hint{position:absolute;left:12px;bottom:12px;z-index:50;padding:10px 14px;border-radius:12px;font-size:13px}
+#toast{position:absolute;left:50%;top:16px;transform:translateX(-50%);z-index:140;padding:10px 16px;border-radius:12px;font-size:13px;opacity:0;pointer-events:none;transition:.25s}
+#toast.show{opacity:1}
+.planet-label{position:absolute;transform:translate(-50%,-120%);font-size:11px;color:#dbeafe;text-shadow:0 1px 4px #000;white-space:nowrap;pointer-events:none}
+.planet-label.dwarf{color:#c4b5fd;font-size:10px}
+body.fs #viewport{position:fixed;inset:0;height:100vh;width:100vw;max-width:none;border-radius:0;z-index:200}
+body.fs #chrome,body.fs #planetNav{display:none}
+a.back{color:var(--accent2);text-decoration:none;font-size:13px}
+@media screen and (orientation: landscape) and (max-height: 500px){
+  #wrap{padding:0.4rem;max-width:none}
+  #chrome h1{font-size:1rem;margin:0.2rem 0}
+  #chrome p{display:none}
+  #viewport{height:calc(100vh - 48px);border-radius:10px}
+  #planetNav{max-height:40px;overflow-x:auto;flex-wrap:nowrap}
+}
+body.fs #viewport{position:fixed;inset:0;height:100%;width:100%;z-index:200;border-radius:0}
+#orientHint{display:none;position:fixed;inset:0;z-index:300;background:rgba(6,9,19,.92);color:#e8eef8;align-items:center;justify-content:center;text-align:center;padding:24px;font-size:15px}
+@media screen and (orientation: portrait) and (max-width: 768px){
+  #orientHint.show{display:flex}
+}
+#infoPanel{display:none;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:160;width:min(420px,calc(100% - 24px));max-height:min(78vh,560px);overflow:auto;padding:0;border-radius:16px;border:1px solid var(--border);background:rgba(10,16,32,.97);box-shadow:0 20px 50px rgba(0,0,0,.55)}
+#infoPanel.open{display:flex;flex-direction:column}
+#infoHead{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(10,16,32,.98);z-index:2}
+#infoHead h3{margin:0;font-size:1.05rem;color:#fbbf24}
+#infoClose{width:36px;height:36px;border-radius:10px;border:1px solid var(--border);background:rgba(30,40,60,.9);color:#fff;font-size:18px;cursor:pointer}
+#infoBody{padding:12px 16px 18px;font-size:13px;line-height:1.55;color:#dbe7f5}
+#infoBody h4{margin:12px 0 6px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#8fa3c2}
+#infoBody ul{margin:0;padding-left:18px}
+#infoBody li{margin:4px 0}
+#infoBody a{color:#38bdf8;word-break:break-all}
+#infoBody .src{margin-top:10px;font-size:12px}
+#infoHint{position:absolute;left:12px;top:12px;z-index:40;font-size:11px;color:#8fa3c2;background:rgba(13,20,38,.7);padding:4px 8px;border-radius:8px;pointer-events:none}
+</style>
+</head>
+<body>
+<div id="orientHint">📱 Xoay ngang điện thoại để trải nghiệm đầy đủ<br><small style="color:#8fa3c2">hoặc bấm ⛶ toàn màn hình</small></div>
+<div id="wrap">
+<div id="chrome" style="margin-bottom:12px">
+<a class="back" href="/">← Hardwin</a>
+<h1 style="margin:.4rem 0;font-size:1.35rem">Hardwin Solar</h1>
+<p style="margin:0;color:var(--muted);font-size:13px">8 hành tinh · 5 hành tinh lùn · chạm 2 lần xem NASA · mobile ngang</p>
+</div>
+<div id="viewport">
+<div id="canvas3d"></div>
+<div id="labels" style="position:absolute;inset:0;pointer-events:none;z-index:5"></div>
+<div id="hint" class="glass"><div id="modeHint">Chế độ: Khám phá</div><div id="subHint" style="color:#bfe9ff;margin-top:2px">Vũ khí: Thiên thạch</div></div>
+<button id="menuBtn" type="button" title="Menu">☰</button>
+<button id="fsBtn" type="button" title="Phóng to">⛶</button>
+<div id="menu" class="glass">
+<h4>Chế độ</h4>
+<button class="btn on" data-mode="explore">🔭 Khám phá</button>
+<button class="btn danger" data-mode="destroy">💥 Hủy diệt</button>
+<button class="btn life" data-mode="create">🌱 Tái tạo sự sống</button>
+<h4>Vũ khí hủy diệt</h4>
+<button class="btn on" data-weapon="meteor">☄️ Thiên thạch</button>
+<button class="btn" data-weapon="laser">🔦 Laser</button>
+<button class="btn" data-weapon="gamma">☢️ Tia gamma</button>
+<button class="btn" data-weapon="alien">👽 Hạm đội ngoài hành tinh</button>
+<button class="btn" data-weapon="nova">💥 Siêu tân tinh</button>
+<h4>Gieo sự sống</h4>
+<button class="btn on" data-seed="forest">🌳 Rừng</button>
+<button class="btn" data-seed="ocean">🌊 Đại dương</button>
+<button class="btn" data-seed="city">🏙️ Thành phố</button>
+<button class="btn" data-seed="farm">🌾 Nông trại</button>
+<button class="btn" data-seed="animal">🦌 Động vật</button>
+<button class="btn" data-seed="atmo">🌫️ Khí quyển</button>
+<h4>Điều khiển</h4>
+<button class="btn" id="btnPause">⏸ Tạm dừng</button>
+<button class="btn on" id="btnOrbit">◎ Quỹ đạo</button>
+<button class="btn on" id="btnLabel">🏷 Nhãn</button>
+<button class="btn on" id="btnSound">🔊 Âm thanh</button>
+<label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px;padding:4px 0">Tốc độ <input id="speedRange" type="range" min="0" max="100" value="20" style="flex:1"></label>
+<button class="btn" id="btnCamReset">📷 Góc nhìn ban đầu</button>
+<button class="btn" id="btnReset">↺ Khôi phục ban đầu</button>
+<button class="btn" id="btnExitFs">⛶ Thu nhỏ màn hình</button>
+</div>
+<div id="infoPanel" class="glass" role="dialog" aria-label="Thông tin thiên thể">
+  <div id="infoHead">
+    <h3 id="infoTitle">—</h3>
+    <button type="button" id="infoClose" title="Đóng">✕</button>
+  </div>
+  <div id="infoBody"></div>
+</div>
+<div id="infoHint">Chạm 2 lần vào thiên thể để xem thông tin NASA</div>
+<div id="toast" class="glass"></div>
+</div>
+<div id="planetNav" style="margin-top:12px;display:flex;flex-wrap:wrap;gap:6px;justify-content:center"></div>
+</div>
+<script src="/game.js"></script>
+</body>
+</html>
