@@ -1,1 +1,205 @@
-PLACEHOLDER
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<title>Hardwin Solar</title>
+<link rel="icon" href="/favicon.png?v=6" type="image/png">
+<script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments);};</script>
+<script defer src="/_vercel/insights/script.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<style>
+:root{--bg:#060913;--card:rgba(13,20,38,.92);--text:#e8eef8;--muted:#8fa3c2;--accent:#fbbf24;--accent2:#38bdf8;--border:rgba(148,163,184,.28);--danger:#f87171;--life:#4ade80}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;touch-action:manipulation}
+#wrap{max-width:1100px;margin:0 auto;padding:1rem}
+.btn{font:600 12px system-ui;cursor:pointer;border:1px solid var(--border);color:var(--text);background:rgba(13,20,38,.75);padding:8px 12px;border-radius:10px;text-align:left}
+.btn.on{border-color:var(--accent2);background:rgba(56,189,248,.2)}
+.btn.danger.on{border-color:var(--danger);background:rgba(248,113,113,.2)}
+.btn.life.on{border-color:var(--life);background:rgba(74,222,128,.2)}
+.glass{background:var(--card);border:1px solid var(--border);backdrop-filter:blur(10px)}
+#viewport{position:relative;width:100%;height:min(70vh,620px);border-radius:16px;overflow:hidden;border:1px solid var(--border);background:#02040a}
+#canvas3d{width:100%;height:100%}#canvas3d canvas{display:block;width:100%!important;height:100%!important}
+#menuBtn,#fsBtn{position:absolute;top:12px;z-index:120;width:44px;height:44px;border-radius:12px;border:1px solid var(--border);background:rgba(13,20,38,.95);color:#fff;font-size:18px;cursor:pointer}
+#menuBtn{right:12px}#fsBtn{right:64px}
+#menu{display:none;position:absolute;right:12px;top:64px;z-index:130;width:min(280px,calc(100% - 24px));max-height:min(70vh,520px);overflow:auto;padding:12px;border-radius:16px;flex-direction:column;gap:6px}
+#menu.open{display:flex}#menu h4{margin:8px 0 4px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+#hint{position:absolute;left:12px;bottom:12px;z-index:50;padding:10px 14px;border-radius:12px;font-size:13px}
+#toast{position:absolute;left:50%;top:16px;transform:translateX(-50%);z-index:140;padding:10px 16px;border-radius:12px;font-size:13px;display:none;max-width:90%}
+#toast.show{display:block}
+.planet-label{position:absolute;transform:translate(-50%,-120%);font-size:11px;pointer-events:none;white-space:nowrap;text-shadow:0 1px 3px #000;color:#e8eef8}
+.planet-label.dwarf{color:#c4b5fd;font-size:10px}
+#orientHint{display:none;position:fixed;inset:0;z-index:9999;background:rgba(6,9,19,.92);color:#e8eef8;align-items:center;justify-content:center;text-align:center;padding:24px;font-size:16px;line-height:1.5}
+#orientHint.show{display:flex;flex-direction:column;gap:12px}
+@media (max-width:700px){
+#viewport{height:calc(100vh - 48px);border-radius:10px}#planetNav{max-height:40px;overflow-x:auto;flex-wrap:nowrap}}
+body.fs #wrap{max-width:none;padding:0}body.fs #viewport{height:100vh;border-radius:0;border:none}
+body.fs #chrome,body.fs #planetNav{display:none}
+#infoPanel{display:none;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:160;width:min(420px,calc(100% - 24px));max-height:min(78vh,560px);overflow:auto;padding:0;border-radius:16px;border:1px solid var(--border);background:rgba(10,16,32,.97);box-shadow:0 20px 50px rgba(0,0,0,.55)}
+#infoPanel.open{display:flex;flex-direction:column}
+#infoHead{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border)}
+#infoTitle{margin:0;font-size:18px}#infoClose{background:none;border:none;color:#fff;font-size:20px;cursor:pointer}
+#infoBody{padding:14px 16px;font-size:14px;line-height:1.5}#infoBody h4{margin:12px 0 4px;font-size:12px;color:var(--accent2);text-transform:uppercase;letter-spacing:.06em}
+#infoBody .src a{color:var(--accent2)}#infoHint{position:absolute;left:12px;top:12px;z-index:40;font-size:12px;color:var(--muted);pointer-events:none}
+#menuSearchWrap{margin:4px 0 8px}
+#menuSearch{width:100%;padding:9px 12px;border-radius:10px;border:1px solid var(--border);background:rgba(6,9,19,.85);color:var(--text);font:14px system-ui;outline:none}
+#menuSearch:focus{border-color:var(--accent2);box-shadow:0 0 0 2px rgba(56,189,248,.25)}
+#menuSearchResults{max-height:160px;overflow:auto;margin-top:6px;display:none;flex-direction:column;gap:3px}
+#menuSearchResults.show{display:flex}
+#menuSearchResults .sitem{padding:8px 10px;border-radius:8px;cursor:pointer;font-size:13px;border:1px solid transparent;background:rgba(13,20,38,.6)}
+#menuSearchResults .sitem:hover,#menuSearchResults .sitem:active{border-color:var(--accent2);background:rgba(56,189,248,.15)}
+#menuSearchResults .sitem .sub{font-size:11px;color:var(--muted);margin-top:2px}
+#menuSearchEmpty{font-size:12px;color:var(--muted);padding:6px 4px;display:none}
+</style>
+</head>
+<body>
+<div id="orientHint">📱 Xoay ngang điện thoại để trải nghiệm đầy đủ<br><small style="color:#8fa3c2">hoặc bấm ⛶ toàn màn hình</small></div>
+<div id="wrap">
+<div id="chrome" style="margin-bottom:12px">
+<div class="brand" style="display:flex;align-items:center;gap:12px">
+<img src="/favicon.png?v=6" width="48" height="48" alt="Hardwin" style="border-radius:50%">
+<div>
+<div style="font-size:11px;letter-spacing:.2em;color:var(--accent2)">HARDWIN</div>
+<h1 style="margin:2px 0 0;font-size:clamp(18px,4vw,24px)">Hệ Mặt Trời 3D</h1>
+<p style="margin:0;color:var(--muted);font-size:13px">8 hành tinh · 5 lùn · tìm kiếm trong menu · cả hệ lao qua Ngân Hà</p>
+</div>
+</div>
+</div>
+<div id="viewport">
+<div id="canvas3d"></div>
+<div id="labels" style="position:absolute;inset:0;pointer-events:none;z-index:5"></div>
+<div id="hint" class="glass"><div id="modeHint">Chế độ: Khám phá</div><div id="subHint" style="color:#bfe9ff;margin-top:2px">Vũ khí: Thiên thạch</div></div>
+<button id="menuBtn" type="button" title="Menu">☰</button>
+<button id="fsBtn" type="button" title="Phóng to">⛶</button>
+<div id="menu" class="glass">
+<h4>🔍 Tìm hành tinh / sao</h4>
+<div id="menuSearchWrap">
+<input type="search" id="menuSearch" placeholder="Gõ tên: Sao Thủy, Trái Đất, Kepler-22b…" autocomplete="off" enterkeyhint="search">
+<div id="menuSearchResults"></div>
+<div id="menuSearchEmpty">Không tìm thấy. Thử tên khác.</div>
+</div>
+<h4>Chế độ</h4>
+<button class="btn on" data-mode="explore">🔭 Khám phá</button>
+<button class="btn danger" data-mode="destroy">💥 Hủy diệt</button>
+<button class="btn life" data-mode="create">🌱 Tái tạo sự sống</button>
+<h4>Vũ khí hủy diệt</h4>
+<button class="btn on" data-weapon="meteor">☄️ Thiên thạch</button>
+<button class="btn" data-weapon="laser">🔦 Laser</button>
+<button class="btn" data-weapon="gamma">☢️ Tia gamma</button>
+<button class="btn" data-weapon="alien">👽 Hạm đội ngoài hành tinh</button>
+<button class="btn" data-weapon="nova">💥 Siêu tân tinh</button>
+<h4>Gieo sự sống</h4>
+<button class="btn on" data-seed="forest">🌳 Rừng</button>
+<button class="btn" data-seed="ocean">🌊 Đại dương</button>
+<button class="btn" data-seed="city">🏙️ Thành phố</button>
+<button class="btn" data-seed="farm">🌾 Nông trại</button>
+<button class="btn" data-seed="animal">🦌 Động vật</button>
+<button class="btn" data-seed="atmo">🌫️ Khí quyển</button>
+<h4>Điều khiển</h4>
+<button class="btn" id="btnPause">⏸ Tạm dừng</button>
+<button class="btn on" id="btnOrbit">◎ Quỹ đạo</button>
+<button class="btn on" id="btnLabel">🏷 Nhãn</button>
+<button class="btn on" id="btnSound">🔊 Âm thanh</button>
+<button class="btn on" id="btnGalactic">🌌 Lao qua Ngân Hà</button>
+<label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px;padding:4px 0">Tốc độ <input id="speedRange" type="range" min="0" max="100" value="20" style="flex:1"></label>
+<button class="btn" id="btnCamReset">📷 Góc nhìn ban đầu</button>
+<button class="btn" id="btnReset">↺ Khôi phục ban đầu</button>
+<button class="btn" id="btnExitFs">⛶ Thu nhỏ màn hình</button>
+</div>
+<div id="infoPanel" class="glass" role="dialog">
+<div id="infoHead"><h3 id="infoTitle">—</h3><button type="button" id="infoClose" title="Đóng">✕</button></div>
+<div id="infoBody"></div>
+</div>
+<div id="infoHint">Chạm 2 lần vào thiên thể để xem thông tin NASA</div>
+<div id="toast" class="glass"></div>
+</div>
+<div id="planetNav" style="margin-top:12px;display:flex;flex-wrap:wrap;gap:6px;justify-content:center"></div>
+</div>
+<script src="/info-data.js"></script>
+<script src="/b64-0.js"></script>
+<script src="/b64-1.js"></script>
+<script src="/b64-2.js"></script>
+<script src="/b64-3.js"></script>
+<script src="/game.js"></script>
+<script>
+(function(){
+  function ready(fn){
+    if(window.HARDWIN && window.HARDWIN.searchBody) return fn();
+    var t=setInterval(function(){
+      if(window.HARDWIN && window.HARDWIN.searchBody){clearInterval(t);fn();}
+    },200);
+    setTimeout(function(){clearInterval(t);},15000);
+  }
+  ready(function(){
+    var input=document.getElementById('menuSearch');
+    var list=document.getElementById('menuSearchResults');
+    var empty=document.getElementById('menuSearchEmpty');
+    if(!input||!list)return;
+    var timer=null;
+    function render(q){
+      list.innerHTML='';
+      list.classList.remove('show');
+      empty.style.display='none';
+      q=(q||'').trim();
+      if(q.length<1)return;
+      var results=[];
+      var planets=window.HARDWIN.planets||[];
+      var seen={};
+      planets.forEach(function(p){
+        if(!p||!p.data)return;
+        var name=p.data.vi||p.data.id||'';
+        var key=name.toLowerCase();
+        if(seen[key])return;
+        if(key.indexOf(q.toLowerCase())>=0 || (p.data.id||'').toLowerCase().indexOf(q.toLowerCase())>=0){
+          seen[key]=1;
+          results.push({label:name, sub:p.data.dwarf?'Hành tinh lùn':(p.isMoon?'Vệ tinh':'Hệ Mặt Trời'), planet:p});
+        }
+      });
+      if(window.HARDWIN_EXO && window.HARDWIN_EXO.search){
+        var exo=window.HARDWIN_EXO.search(q,12);
+        (exo||[]).forEach(function(e){
+          results.push({label:e.name, sub:(e.host?('Sao chủ: '+e.host):'Exoplanet')+(e.eqt?(' · '+Math.round(e.eqt)+'K'):''), exo:e});
+        });
+      }
+      if(!results.length){empty.style.display='block';return;}
+      results.slice(0,14).forEach(function(r){
+        var d=document.createElement('div');
+        d.className='sitem';
+        d.innerHTML='<div>'+r.label+'</div><div class="sub">'+(r.sub||'')+'</div>';
+        d.onclick=function(){
+          list.classList.remove('show');
+          input.value=r.label;
+          if(r.planet){
+            if(window.HARDWIN.flyTo) window.HARDWIN.flyTo(r.planet);
+            if(window.HARDWIN.openInfo) setTimeout(function(){window.HARDWIN.openInfo(r.planet);},600);
+            if(window.HARDWIN.toast) window.HARDWIN.toast('🚀 Bay tới '+r.label);
+          }else if(r.exo && window.HARDWIN_EXO && window.HARDWIN_EXO.goto){
+            window.HARDWIN_EXO.goto(r.exo);
+          }
+          document.getElementById('menu').classList.remove('open');
+        };
+        list.appendChild(d);
+      });
+      list.classList.add('show');
+    }
+    input.addEventListener('input',function(){
+      clearTimeout(timer);
+      timer=setTimeout(function(){render(input.value);},120);
+    });
+    input.addEventListener('keydown',function(e){
+      if(e.key==='Enter'){
+        e.preventDefault();
+        var first=list.querySelector('.sitem');
+        if(first)first.click();
+        else render(input.value);
+      }
+    });
+    var menuBtn=document.getElementById('menuBtn');
+    if(menuBtn)menuBtn.addEventListener('click',function(){
+      setTimeout(function(){if(input)input.focus();},80);
+    });
+  });
+})();
+</script>
+</body>
+</html>
