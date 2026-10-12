@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
 <title>Hardwin Solar</title>
+<!-- search-v2 2026-10-12 -->
 <link rel="icon" href="/favicon.png?v=6" type="image/png">
 <script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments);};</script>
 <script defer src="/_vercel/insights/script.js"></script>
@@ -74,7 +75,7 @@ body.fs #chrome,body.fs #planetNav{display:none}
 <div id="menu" class="glass">
 <h4>🔍 Tìm hành tinh / sao</h4>
 <div id="menuSearchWrap">
-<input type="search" id="menuSearch" placeholder="Gõ tên: Sao Thủy, Trái Đất, Kepler-22b…" autocomplete="off" enterkeyhint="search">
+<input type="search" id="menuSearch" placeholder="Gõ tên: Sao Thủy, Trái Đất, Sao Mộc…" autocomplete="off" enterkeyhint="search">
 <div id="menuSearchResults"></div>
 <div id="menuSearchEmpty">Không tìm thấy. Thử tên khác.</div>
 </div>
@@ -123,81 +124,90 @@ body.fs #chrome,body.fs #planetNav{display:none}
 <script src="/game.js"></script>
 <script>
 (function(){
-  function ready(fn){
-    if(window.HARDWIN && window.HARDWIN.searchBody) return fn();
-    var t=setInterval(function(){
-      if(window.HARDWIN && window.HARDWIN.searchBody){clearInterval(t);fn();}
-    },200);
-    setTimeout(function(){clearInterval(t);},15000);
+  var input=document.getElementById('menuSearch');
+  var list=document.getElementById('menuSearchResults');
+  var empty=document.getElementById('menuSearchEmpty');
+  if(!input||!list)return;
+  var timer=null;
+  function getBodies(){
+    var out=[];
+    var nav=document.getElementById('planetNav');
+    if(nav){
+      nav.querySelectorAll('button').forEach(function(b){
+        var t=(b.textContent||'').trim();
+        if(t) out.push({label:t.replace(/\s*·\s*lùn$/,''), full:t, btn:b});
+      });
+    }
+    var aliases={
+      'sao thuy':'Sao Thủy','mercury':'Sao Thủy','thuy':'Sao Thủy',
+      'sao kim':'Sao Kim','venus':'Sao Kim','kim':'Sao Kim',
+      'trai dat':'Trái Đất','earth':'Trái Đất','dat':'Trái Đất',
+      'sao hoa':'Sao Hỏa','mars':'Sao Hỏa','hoa':'Sao Hỏa',
+      'sao moc':'Sao Mộc','jupiter':'Sao Mộc','moc':'Sao Mộc',
+      'sao tho':'Sao Thổ','saturn':'Sao Thổ','tho':'Sao Thổ',
+      'thien vuong':'Thiên Vương','uranus':'Thiên Vương',
+      'hai vuong':'Hải Vương','neptune':'Hải Vương',
+      'mat troi':'Mặt Trời','sun':'Mặt Trời','troi':'Mặt Trời',
+      'pluto':'Sao Diêm Vương','diem vuong':'Sao Diêm Vương',
+      'mat trang':'Mặt Trăng','moon':'Mặt Trăng'
+    };
+    return {list:out, aliases:aliases};
   }
-  ready(function(){
-    var input=document.getElementById('menuSearch');
-    var list=document.getElementById('menuSearchResults');
-    var empty=document.getElementById('menuSearchEmpty');
-    if(!input||!list)return;
-    var timer=null;
-    function render(q){
-      list.innerHTML='';
-      list.classList.remove('show');
-      empty.style.display='none';
-      q=(q||'').trim();
-      if(q.length<1)return;
-      var results=[];
-      var planets=window.HARDWIN.planets||[];
-      var seen={};
-      planets.forEach(function(p){
-        if(!p||!p.data)return;
-        var name=p.data.vi||p.data.id||'';
-        var key=name.toLowerCase();
-        if(seen[key])return;
-        if(key.indexOf(q.toLowerCase())>=0 || (p.data.id||'').toLowerCase().indexOf(q.toLowerCase())>=0){
-          seen[key]=1;
-          results.push({label:name, sub:p.data.dwarf?'Hành tinh lùn':(p.isMoon?'Vệ tinh':'Hệ Mặt Trời'), planet:p});
+  function render(q){
+    list.innerHTML='';
+    list.classList.remove('show');
+    empty.style.display='none';
+    q=(q||'').trim();
+    if(q.length<1)return;
+    var ql=q.toLowerCase();
+    var data=getBodies();
+    var results=[];
+    var seen={};
+    if(data.aliases[ql]){
+      var target=data.aliases[ql];
+      data.list.forEach(function(b){
+        if(b.label===target||b.full.indexOf(target)>=0){
+          if(!seen[b.label]){seen[b.label]=1;results.push(b);}
         }
       });
-      if(window.HARDWIN_EXO && window.HARDWIN_EXO.search){
-        var exo=window.HARDWIN_EXO.search(q,12);
-        (exo||[]).forEach(function(e){
-          results.push({label:e.name, sub:(e.host?('Sao chủ: '+e.host):'Exoplanet')+(e.eqt?(' · '+Math.round(e.eqt)+'K'):''), exo:e});
-        });
-      }
-      if(!results.length){empty.style.display='block';return;}
-      results.slice(0,14).forEach(function(r){
-        var d=document.createElement('div');
-        d.className='sitem';
-        d.innerHTML='<div>'+r.label+'</div><div class="sub">'+(r.sub||'')+'</div>';
-        d.onclick=function(){
-          list.classList.remove('show');
-          input.value=r.label;
-          if(r.planet){
-            if(window.HARDWIN.flyTo) window.HARDWIN.flyTo(r.planet);
-            if(window.HARDWIN.openInfo) setTimeout(function(){window.HARDWIN.openInfo(r.planet);},600);
-            if(window.HARDWIN.toast) window.HARDWIN.toast('🚀 Bay tới '+r.label);
-          }else if(r.exo && window.HARDWIN_EXO && window.HARDWIN_EXO.goto){
-            window.HARDWIN_EXO.goto(r.exo);
-          }
-          document.getElementById('menu').classList.remove('open');
-        };
-        list.appendChild(d);
-      });
-      list.classList.add('show');
     }
-    input.addEventListener('input',function(){
-      clearTimeout(timer);
-      timer=setTimeout(function(){render(input.value);},120);
-    });
-    input.addEventListener('keydown',function(e){
-      if(e.key==='Enter'){
-        e.preventDefault();
-        var first=list.querySelector('.sitem');
-        if(first)first.click();
-        else render(input.value);
+    data.list.forEach(function(b){
+      var n=b.label.toLowerCase();
+      var f=b.full.toLowerCase();
+      if(n.indexOf(ql)>=0||f.indexOf(ql)>=0){
+        if(!seen[b.label]){seen[b.label]=1;results.push(b);}
       }
     });
-    var menuBtn=document.getElementById('menuBtn');
-    if(menuBtn)menuBtn.addEventListener('click',function(){
-      setTimeout(function(){if(input)input.focus();},80);
+    if(!results.length){empty.style.display='block';return;}
+    results.slice(0,12).forEach(function(r){
+      var d=document.createElement('div');
+      d.className='sitem';
+      d.innerHTML='<div>'+r.label+'</div><div class="sub">'+(r.full.indexOf('lùn')>=0?'Hành tinh lùn':'Hệ Mặt Trời')+'</div>';
+      d.onclick=function(){
+        list.classList.remove('show');
+        input.value=r.label;
+        document.getElementById('menu').classList.remove('open');
+        if(r.btn) r.btn.click();
+      };
+      list.appendChild(d);
     });
+    list.classList.add('show');
+  }
+  input.addEventListener('input',function(){
+    clearTimeout(timer);
+    timer=setTimeout(function(){render(input.value);},100);
+  });
+  input.addEventListener('keydown',function(e){
+    if(e.key==='Enter'){
+      e.preventDefault();
+      var first=list.querySelector('.sitem');
+      if(first) first.click();
+      else render(input.value);
+    }
+  });
+  var menuBtn=document.getElementById('menuBtn');
+  if(menuBtn) menuBtn.addEventListener('click',function(){
+    setTimeout(function(){ try{input.focus();}catch(e){} },100);
   });
 })();
 </script>
