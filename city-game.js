@@ -1,1 +1,1 @@
-PLACEHOLDER_USE_FILE
+(function(){Promise.all([fetch('/city-game-a.js?v=hero3').then(function(r){return r.text();}),fetch('/city-game-b.js?v=hero3').then(function(r){return r.text();})]).then(function(p){(0,eval)(p[0]+p[1]);}).catch(function(e){var el=document.getElementById('load');if(el)el.textContent='Lỗi tải game: '+e;});})();
