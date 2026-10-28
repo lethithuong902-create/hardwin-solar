@@ -81,7 +81,8 @@ g.position.set(x,0,z);cityRoot.add(g);cars.push({g:g,spd:kind==='lambo'?rnd(9,14
 for(i=0;i<10;i++)addCar(rnd(-130,130),rnd(-130,130),'sedan');
 for(i=0;i<5;i++)addCar(rnd(-130,130),rnd(-130,130),'lambo');
 var npcs=[],skins=[0xf5c6a0,0xe0ac69,0xc68642,0x8d5524],shirts=[0x3b82f6,0xef4444,0x22c55e,0xa855f7,0xf59e0b],pants=[0x1e3a5f,0x374151];
-for(i=0;i<10;i++){var p=makePerson(skins[i%4],shirts[i%5],pants[i%2],false);p.position.set(rnd(-90,90),0,rnd(-90,90));cityRoot.add(p);npcs.push({g:p,a:rnd(0,6.28),s:rnd(1.1,2.2),hp:100,dead:false,aggroT:0,shootCD:0,face:0});}
+var HERO_TYPES=['soldier','spider','iron'];
+for(i=0;i<10;i++){var p=makePerson(skins[i%4],shirts[i%5],pants[i%2],false);p.position.set(rnd(-90,90),0,rnd(-90,90));cityRoot.add(p);npcs.push({g:p,a:rnd(0,6.28),s:rnd(1.1,2.2),hp:100,dead:false,aggroT:0,shootCD:0,face:0,hero:HERO_TYPES[i%3],flyY:0});}
 var player=makePerson(0xf5c6a0,0x38bdf8,0x0f2744,true);player.position.set(0,0,16);scene.add(player);
 var intFloor=new THREE.Mesh(new THREE.BoxGeometry(18,0.4,18),mat(0x8b6914));intFloor.position.y=0.2;interior.add(intFloor);
 var wallMat=mat(0xe8eef6);
@@ -89,15 +90,18 @@ var wallMat=mat(0xe8eef6);
 var pl=new THREE.PointLight(0xfff4e0,1.3,28);pl.position.set(0,5,0);interior.add(pl);
 var GUNS={pistol:{name:'Súng nhỏ',dmg:14,cd:0.35,spd:48,color:0xffee88,spread:0.04},smg:{name:'SMG Plasma',dmg:11,cd:0.1,spd:52,color:0x44ffaa,spread:0.07},rifle:{name:'Rifle Sniper',dmg:48,cd:0.75,spd:95,color:0xff6666,spread:0.008},rail:{name:'Railgun Nova',dmg:85,cd:1.15,spd:125,color:0xaa66ff,spread:0}};
 var unlocked={pistol:true,smg:false,rifle:false,rail:false},grenades=0,gun='pistol',bullets=[],grenadeObjs=[],shootCD=0,grenCD=0;
+var hero='soldier',flying=false,webPull=null;
 var hp=100,maxHp=100,dead=false,inCar=false,carRef=null,vy=0,onGround=true,standY=0;
 var inside=false,outsidePos=new THREE.Vector3();
 var joy={x:0,y:0,active:false},keys={},camYaw=0,pitch=0.45,faceYaw=0,walkT=0;
 function setKey(c,o){keys[c]=!!o;}
 window.addEventListener('keydown',function(e){setKey(e.code,true);if(e.code==='Space'||e.code.indexOf('Arrow')===0)e.preventDefault();if(e.code==='KeyF')toggleCar();if(e.code==='KeyE'){if(!tryLoot())tryEnter();}if(e.code==='KeyG')throwGrenade();});
 window.addEventListener('keyup',function(e){setKey(e.code,false);});
-function refreshMenu(){document.querySelectorAll('#menu .w').forEach(function(b){var k=b.dataset.gun;if(!unlocked[k]){b.style.opacity='0.35';}else{b.style.opacity='1';}});var gl=document.getElementById('gunLabel');if(gl)gl.textContent='🔫 '+GUNS[gun].name+(grenades?' · 💣×'+grenades:'');}
+function heroLabel(){return hero==='spider'?'🕸️ Người nhện':hero==='iron'?'🤖 Người sắt':'🎖️ Lính';}
+function refreshMenu(){document.querySelectorAll('#menu .w').forEach(function(b){var k=b.dataset.gun;if(!unlocked[k]){b.style.opacity='0.35';}else{b.style.opacity='1';}});document.querySelectorAll('#menu .hero').forEach(function(b){b.classList.toggle('on',b.dataset.hero===hero);});var gl=document.getElementById('gunLabel');if(gl){var extra=hero==='spider'?' · Tơ':hero==='iron'?' · Laser':'';gl.textContent=heroLabel()+(hero==='soldier'?' · 🔫 '+GUNS[gun].name:'')+extra+(grenades?' · 💣×'+grenades:'');}}
 document.getElementById('menuBtn').onclick=function(){document.getElementById('menu').classList.toggle('open');refreshMenu();};
 document.querySelectorAll('#menu .w').forEach(function(b){b.onclick=function(){var k=b.dataset.gun;if(!unlocked[k]){toast('Lên nóc nhà nhặt loot');return;}gun=k;document.querySelectorAll('#menu .w').forEach(function(x){x.classList.toggle('on',x===b);});document.getElementById('menu').classList.remove('open');refreshMenu();toast(GUNS[gun].name);};});
+document.querySelectorAll('#menu .hero').forEach(function(b){b.onclick=function(){hero=b.dataset.hero;flying=false;webPull=null;document.querySelectorAll('#menu .hero').forEach(function(x){x.classList.toggle('on',x===b);});document.getElementById('menu').classList.remove('open');refreshMenu();toast(heroLabel()+(hero==='spider'?' — bắn tơ kéo lên nóc':hero==='iron'?' — bay + laser':' — súng'));};});
 var joyBase=document.getElementById('joyBase'),joyKnob=document.getElementById('joyKnob'),joyZone=document.getElementById('joyZone');
 function joyUpd(cx,cy){var r=joyBase.getBoundingClientRect();var mx=cx-(r.left+r.width/2),my=cy-(r.top+r.height/2);var max=52,len=Math.sqrt(mx*mx+my*my)||1;if(len>max){mx*=max/len;my*=max/len;}joyKnob.style.left=(44+mx)+'px';joyKnob.style.top=(44+my)+'px';joy.x=mx/max;joy.y=-my/max;}
 function joyEnd(){joy.active=false;joy.x=0;joy.y=0;joyKnob.style.left='44px';joyKnob.style.top='44px';}
@@ -128,8 +132,17 @@ function tryEnter(){if(inside){exitBuilding();return;}var b=nearEnterable();if(!
 function exitBuilding(){inside=false;cityRoot.visible=true;interior.visible=false;scene.background=new THREE.Color(0x87b8dc);scene.fog=new THREE.Fog(0x87b8dc,120,400);player.position.copy(outsidePos);player.position.z+=3;standY=0;document.getElementById('mode').textContent='Đi bộ';toast('Ra ngoài');}
 function blocked(x,z,rad){rad=rad||0.45;if(inside)return Math.abs(x)>8||Math.abs(z)>8;for(var bi=0;bi<buildings.length;bi++){var b=buildings[bi];if(Math.abs(x-b.x)<b.w/2+rad&&Math.abs(z-b.z)<b.d/2+rad)return true;}return false;}
 function supportY(x,z){if(inside)return 0;var best=0;for(var i=0;i<platforms.length;i++){var p=platforms[i];if(Math.abs(x-p.x)<p.w/2&&Math.abs(z-p.z)<p.d/2){if(p.y>best)best=p.y;}}return best;}
-function fire(from,dir,isPlayer,gtype){var gdef=GUNS[gtype||gun];var mesh=new THREE.Mesh(new THREE.SphereGeometry(0.11,6,6),new THREE.MeshBasicMaterial({color:gdef.color}));mesh.position.copy(from);scene.add(mesh);var d=dir.clone().normalize();d.x+=rnd(-gdef.spread,gdef.spread);d.z+=rnd(-gdef.spread,gdef.spread);d.normalize();bullets.push({mesh:mesh,vel:d.multiplyScalar(gdef.spd),life:1.5,dmg:gdef.dmg,fromPlayer:!!isPlayer});}
-function playerShoot(){if(shootCD>0||dead||inCar)return;shootCD=GUNS[gun].cd;var origin=player.position.clone();origin.y=standY+1.35;fire(origin,new THREE.Vector3(Math.sin(faceYaw),0,Math.cos(faceYaw)),true,gun);}
+function fire(from,dir,isPlayer,gtype,kind){kind=kind||'bullet';var color=0xffee88,spd=48,dmg=14,spread=0.04,life=1.5,rad=0.11;
+if(kind==='web'){color=0xe8e8e8;spd=36;dmg=8;spread=0.02;life=1.2;rad=0.14;}
+else if(kind==='laser'){color=0xff3333;spd=90;dmg=22;spread=0.01;life=1.1;rad=0.08;}
+else{var gdef=GUNS[gtype||gun];color=gdef.color;spd=gdef.spd;dmg=gdef.dmg;spread=gdef.spread;}
+var mesh=new THREE.Mesh(new THREE.SphereGeometry(rad,6,6),new THREE.MeshBasicMaterial({color:color}));mesh.position.copy(from);scene.add(mesh);var d=dir.clone().normalize();d.x+=rnd(-spread,spread);d.z+=rnd(-spread,spread);d.normalize();bullets.push({mesh:mesh,vel:d.multiplyScalar(spd),life:life,dmg:dmg,fromPlayer:!!isPlayer,kind:kind});}
+function playerShoot(){if(shootCD>0||dead||inCar)return;var origin=player.position.clone();origin.y=standY+1.35;
+if(hero==='spider'){shootCD=0.45;var dir=new THREE.Vector3(Math.sin(faceYaw),0.55,Math.cos(faceYaw));fire(origin,dir,true,null,'web');
+var best=null,bd=9;for(var li=0;li<loots.length;li++){if(loots[li].taken)continue;var d=player.position.distanceTo(loots[li].g.position);if(d<bd&&loots[li].g.position.y>player.position.y+2){bd=d;best=loots[li];}}
+if(best){webPull={tx:best.g.position.x,ty:best.g.position.y+0.5,tz:best.g.position.z,t:0.9};toast('Tơ kéo lên nóc!');}return;}
+if(hero==='iron'){shootCD=0.28;fire(origin,new THREE.Vector3(Math.sin(faceYaw),0.05,Math.cos(faceYaw)),true,null,'laser');return;}
+shootCD=GUNS[gun].cd;fire(origin,new THREE.Vector3(Math.sin(faceYaw),0,Math.cos(faceYaw)),true,gun);}
 function throwGrenade(){if(grenades<=0||grenCD>0||dead||inCar){if(grenades<=0)toast('Lên nóc nhặt lựu đạn');return;}grenades--;grenCD=1.2;refreshMenu();var mesh=new THREE.Mesh(new THREE.SphereGeometry(0.22,10,8),mat(0x166534));mesh.position.copy(player.position);mesh.position.y=standY+1.2;scene.add(mesh);var dir=new THREE.Vector3(Math.sin(faceYaw),0.55,Math.cos(faceYaw)).normalize().multiplyScalar(14);grenadeObjs.push({mesh:mesh,vel:dir,life:2.2});toast('Ném lựu đạn!');}
 var clock=new THREE.Clock(),hitCD=0;
 function animate(){
@@ -148,7 +161,10 @@ if(keys.KeyA||keys.ArrowLeft)mv.add(right);if(keys.KeyD||keys.ArrowRight)mv.sub(
 if(joy.active&&(Math.abs(joy.x)>0.08||Math.abs(joy.y)>0.08)){mv.addScaledVector(fwd,joy.y);mv.addScaledVector(right,-joy.x);}
 var moving=mv.lengthSq()>0.0001;
 if(moving){mv.normalize();faceYaw=Math.atan2(mv.x,mv.z);mv.multiplyScalar(sp*dt);var nx=player.position.x+mv.x,nz=player.position.z+mv.z;if(!blocked(nx,nz,inCar?1.2:0.45)){player.position.x=nx;player.position.z=nz;}}
-if(keys.Space&&onGround&&!inCar){vy=9;onGround=false;}
+if(hero==='iron'&&keys.Space&&!inCar&&!dead){flying=true;vy=Math.max(vy,4.5);onGround=false;if(player.position.y>22)player.position.y=22;}
+else if(keys.Space&&onGround&&!inCar){vy=9;onGround=false;flying=false;}
+else if(!keys.Space){flying=false;}
+if(webPull){webPull.t-=dt;var wx=webPull.tx-player.position.x,wz=webPull.tz-player.position.z,wy=webPull.ty-player.position.y;player.position.x+=wx*Math.min(1,8*dt);player.position.z+=wz*Math.min(1,8*dt);player.position.y+=wy*Math.min(1,8*dt);standY=player.position.y;vy=0;onGround=false;if(webPull.t<=0||Math.sqrt(wx*wx+wy*wy+wz*wz)<1.2)webPull=null;}
 vy-=28*dt;player.position.y+=vy*dt;
 var sy=supportY(player.position.x,player.position.z);
 if(player.position.y<=sy){player.position.y=sy;vy=0;onGround=true;standY=sy;}else{onGround=false;standY=player.position.y;}
@@ -157,9 +173,9 @@ if(inCar&&carRef){carRef.g.position.x=player.position.x;carRef.g.position.z=play
 if(keys.Shoot)playerShoot();document.getElementById('spd').textContent=Math.round((moving?sp:0)*3.6)+' km/h';
 }
 for(var gi=grenadeObjs.length-1;gi>=0;gi--){var gr=grenadeObjs[gi];gr.life-=dt;gr.vel.y-=18*dt;gr.mesh.position.addScaledVector(gr.vel,dt);if(gr.mesh.position.y<0.3){gr.mesh.position.y=0.3;gr.vel.y*=-0.3;gr.vel.x*=0.7;gr.vel.z*=0.7;}
-if(gr.life<=0){for(var ni=0;ni<npcs.length;ni++){var n=npcs[ni];if(n.dead)continue;var d=n.g.position.distanceTo(gr.mesh.position);if(d<8){n.hp-=Math.max(20,70-d*6);n.aggroT=4;if(n.hp<=0){n.dead=true;n.g.rotation.z=Math.PI/2;n.g.position.y=0.2;toast('Boom!');}}}scene.remove(gr.mesh);grenadeObjs.splice(gi,1);}}
+if(gr.life<=0){for(var ni=0;ni<npcs.length;ni++){var n=npcs[ni];if(n.dead)continue;var dg=n.g.position.distanceTo(gr.mesh.position);if(dg<5.5){n.hp-=55;n.aggroT=12;if(n.hp<=0){n.dead=true;n.g.rotation.z=Math.PI/2;n.g.position.y=0.2;toast('Boom!');}}}scene.remove(gr.mesh);grenadeObjs.splice(gi,1);}}
 for(var bi=bullets.length-1;bi>=0;bi--){var bu=bullets[bi];bu.life-=dt;bu.mesh.position.addScaledVector(bu.vel,dt);if(bu.life<=0){scene.remove(bu.mesh);bullets.splice(bi,1);continue;}
-if(bu.fromPlayer){for(var ni=0;ni<npcs.length;ni++){var n=npcs[ni];if(n.dead||!cityRoot.visible)continue;if(bu.mesh.position.distanceTo(new THREE.Vector3(n.g.position.x,1.2,n.g.position.z))<1){n.hp-=bu.dmg;n.aggroT=5;scene.remove(bu.mesh);bullets.splice(bi,1);if(n.hp<=0){n.dead=true;n.g.rotation.z=Math.PI/2;n.g.position.y=0.2;n.aggroT=0;toast('Hạ gục!');}break;}}}
+if(bu.fromPlayer){for(var ni=0;ni<npcs.length;ni++){var n=npcs[ni];if(n.dead)continue;if(bu.mesh.position.distanceTo(new THREE.Vector3(n.g.position.x,n.g.position.y+1.2,n.g.position.z))<0.85){n.hp-=bu.dmg;n.aggroT=14;scene.remove(bu.mesh);bullets.splice(bi,1);if(n.hp<=0){n.dead=true;n.g.rotation.z=Math.PI/2;n.g.position.y=0.2;n.aggroT=0;toast('Hạ gục!');}break;}}}
 else if(!dead&&bu.mesh.position.distanceTo(new THREE.Vector3(player.position.x,standY+1.2,player.position.z))<0.9){hurt(bu.dmg);scene.remove(bu.mesh);bullets.splice(bi,1);}}
 if(cityRoot.visible){
 for(i=0;i<cars.length;i++){var c=cars[i];if(inCar&&c===carRef)continue;var nx=c.g.position.x,nz=c.g.position.z;
@@ -171,7 +187,8 @@ for(i=0;i<npcs.length;i++){var n=npcs[i];if(n.dead)continue;n.shootCD=Math.max(0
 var toP=new THREE.Vector3().subVectors(player.position,n.g.position);var dist=toP.length();
 if(n.aggroT>0&&dist<32&&!dead){n.face=Math.atan2(toP.x,toP.z);n.g.rotation.y=n.face;
 if(dist>12){var step=toP.normalize().multiplyScalar(2.2*dt);var nnx=n.g.position.x+step.x,nnz=n.g.position.z+step.z;if(!blocked(nnx,nnz,0.4)){n.g.position.x=nnx;n.g.position.z=nnz;}walkAnim(n.g,walkT+i,true);}
-if(n.shootCD<=0&&dist<26&&dist>4){n.shootCD=1.4+Math.random()*0.6;var o=n.g.position.clone();o.y=1.3;fire(o,new THREE.Vector3(Math.sin(n.face)+rnd(-0.12,0.12),0,Math.cos(n.face)+rnd(-0.12,0.12)),false,'pistol');}}
+if(n.hero==='iron'&&dist<28){n.flyY=Math.min(6,n.flyY+dt*3);n.g.position.y=n.flyY;}else{n.flyY=Math.max(0,n.flyY-dt*4);n.g.position.y=n.flyY;}
+if(n.shootCD<=0&&dist<26&&dist>4){n.shootCD=1.2+Math.random()*0.7;var o=n.g.position.clone();o.y=1.3+n.flyY;var kind=n.hero==='spider'?'web':n.hero==='iron'?'laser':'bullet';var aimY=n.hero==='spider'?0.35:0;fire(o,new THREE.Vector3(Math.sin(n.face)+rnd(-0.12,0.12),aimY,Math.cos(n.face)+rnd(-0.12,0.12)),false,'pistol',kind);}}
 else{n.a+=dt*0.22;var nnx=n.g.position.x+Math.cos(n.a)*n.s*dt,nnz=n.g.position.z+Math.sin(n.a)*n.s*dt;if(!blocked(nnx,nnz,0.4)){n.g.position.x=nnx;n.g.position.z=nnz;}else n.a+=1.2;n.g.rotation.y=-n.a+Math.PI/2;walkAnim(n.g,walkT+i,true);}}
 }
 for(i=0;i<loots.length;i++)if(!loots[i].taken)loots[i].g.position.y=loots[i].y+Math.sin(walkT*2+i)*0.15;
