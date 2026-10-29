@@ -12,7 +12,7 @@
 :root{
   --bg:#060913;--card:rgba(13,20,38,.96);--text:#e8eef8;--muted:#8fa3c2;
   --accent:#fbbf24;--accent2:#38bdf8;--border:rgba(148,163,184,.28);
-  --light:#f0d9b5;--dark:#b58863;--sel:rgba(251,191,36,.55);--last:rgba(56,189,248,.4);
+  --light:#f0d9b5;--dark:#b58863;--sel:rgba(251,191,36,.55);--last:rgba(56,189,248,.45);
   --legal:rgba(34,197,94,.55);--danger:#ef4444;--ok:#4ade80;
 }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -20,8 +20,8 @@ html,body{height:100%;background:radial-gradient(ellipse at top,#0f1a2e 0%,#0609
 body.fs{background:#060913}
 body.fs .back,body.fs .brand,body.fs .moves,body.fs #menuScreen{display:none!important}
 body.fs .wrap{max-width:none;padding:8px;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center}
-body.fs #gameScreen{width:100%;max-width:min(96vw,96vh);display:flex;flex-direction:column}
-body.fs .board-outer{max-width:min(92vw,calc(92vh - 100px))}
+body.fs #gameScreen{width:100%;max-width:min(96vw,96vh)}
+body.fs .board-outer{max-width:min(92vw,calc(92vh - 160px))}
 .back{position:fixed;left:12px;top:12px;z-index:50;font:700 13px system-ui;color:var(--accent2);text-decoration:none;background:rgba(8,14,28,.95);padding:10px 14px;border-radius:10px;border:1px solid rgba(56,189,248,.4)}
 .wrap{max-width:520px;margin:0 auto;padding:56px 12px 28px;min-height:100%}
 .brand{display:flex;align-items:center;gap:12px;margin-bottom:14px}
@@ -47,6 +47,19 @@ body.fs .board-outer{max-width:min(92vw,calc(92vh - 100px))}
 .actions button{padding:9px 12px;border-radius:10px;border:1px solid var(--border);background:rgba(30,41,59,.9);color:var(--text);font:600 12px system-ui;cursor:pointer}
 .actions button.danger{border-color:rgba(248,113,113,.45);color:#fca5a5}
 .thinking{font-size:13px;color:var(--accent2);min-height:18px;margin-bottom:6px}
+.player-bar{display:flex;align-items:center;gap:10px;background:rgba(13,20,38,.92);border:1px solid var(--border);border-radius:12px;padding:8px 10px;margin:8px 0}
+.player-bar.active{border-color:var(--accent2);box-shadow:0 0 0 1px rgba(56,189,248,.25)}
+.avatar{width:42px;height:42px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:22px;border:2px solid rgba(148,163,184,.35);background:linear-gradient(145deg,#1e293b,#0f172a)}
+.avatar.white-side{border-color:rgba(251,191,36,.6);background:linear-gradient(145deg,#fef3c7,#fbbf24)}
+.avatar.black-side{border-color:rgba(56,189,248,.5);background:linear-gradient(145deg,#1e293b,#334155)}
+.player-meta{flex:1;min-width:0}
+.player-name{font:700 13px system-ui;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.player-sub{font:12px system-ui;color:var(--muted)}
+.captured{display:flex;flex-wrap:wrap;align-items:center;gap:1px 2px;min-height:28px;max-width:55%;justify-content:flex-end;font-family:"Noto Sans Symbols 2","Segoe UI Symbol",serif;font-size:18px;line-height:1}
+.captured .cap{display:inline-block}
+.captured .cap.w{color:#f8fafc;text-shadow:0 0 1px #000,0 1px 2px rgba(0,0,0,.8)}
+.captured .cap.b{color:#0f172a;text-shadow:0 0 1px #fff,0 1px 1px rgba(255,255,255,.4);filter:drop-shadow(0 0 1px #94a3b8)}
+.mat-adv{font:700 12px system-ui;color:var(--ok);margin-left:4px}
 .board-outer{width:100%;max-width:min(100vw - 24px,460px);margin:0 auto;display:grid;grid-template-columns:22px 1fr;grid-template-rows:1fr 20px;gap:0}
 .ranks{display:grid;grid-template-rows:repeat(8,1fr);font:600 11px system-ui;color:var(--muted);user-select:none}
 .ranks span{display:flex;align-items:center;justify-content:center}
@@ -54,20 +67,22 @@ body.fs .board-outer{max-width:min(92vw,calc(92vh - 100px))}
 .files span{display:flex;align-items:center;justify-content:center;padding-top:2px}
 .board-frame{grid-column:2;grid-row:1;border-radius:8px;overflow:hidden;box-shadow:0 10px 36px rgba(0,0,0,.5);border:2px solid rgba(148,163,184,.3);aspect-ratio:1;position:relative}
 #board{display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);width:100%;height:100%;user-select:none}
-.sq{display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;font-family:"Noto Sans Symbols 2","Segoe UI Symbol","Apple Color Emoji",serif;font-size:clamp(26px,7.2vw,46px);line-height:1;transition:none}
+.sq{display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;font-size:clamp(26px,7.2vw,46px);line-height:1}
 .sq.light{background:var(--light)}
 .sq.dark{background:var(--dark)}
 .sq.sel{background:var(--sel)!important}
-.sq.last{box-shadow:inset 0 0 0 3px rgba(56,189,248,.7)}
+.sq.last{box-shadow:inset 0 0 0 3px rgba(56,189,248,.75)}
 .sq.check{box-shadow:inset 0 0 0 4px var(--danger)}
 .sq .dot{position:absolute;width:22%;height:22%;border-radius:50%;background:var(--legal);pointer-events:none}
 .sq .ring{position:absolute;inset:8%;border-radius:6px;border:3px solid var(--legal);pointer-events:none;box-sizing:border-box}
-.sq .pc{pointer-events:none;display:block;transform:translateZ(0)}
-.moves{max-height:110px;overflow:auto;font:13px/1.5 ui-monospace,monospace;color:var(--muted);padding:10px 12px;background:rgba(8,14,28,.7);border-radius:10px;border:1px solid var(--border);margin-top:12px}
+.sq .pc{pointer-events:none;display:block;font-family:"Noto Sans Symbols 2","Segoe UI Symbol","Apple Color Emoji",serif;line-height:1}
+.sq .pc.w{color:#faf8f5;text-shadow:-1px -1px 0 #1a1a1a,1px -1px 0 #1a1a1a,-1px 1px 0 #1a1a1a,1px 1px 0 #1a1a1a,0 2px 3px rgba(0,0,0,.45)}
+.sq .pc.b{color:#1a1520;text-shadow:0 0 1px #e8e8e8,0 1px 2px rgba(255,255,255,.25);filter:drop-shadow(0 1px 1px rgba(0,0,0,.35))}
+.moves{max-height:100px;overflow:auto;font:13px/1.5 ui-monospace,monospace;color:var(--muted);padding:10px 12px;background:rgba(8,14,28,.7);border-radius:10px;border:1px solid var(--border);margin-top:10px}
 .promo{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:none;align-items:center;justify-content:center}
 .promo.show{display:flex}
 .promo-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;display:flex;gap:10px}
-.promo-box button{width:60px;height:60px;font-size:34px;border-radius:12px;border:1px solid var(--border);background:rgba(30,41,59,.95);cursor:pointer;font-family:"Noto Sans Symbols 2",serif;color:#fff}
+.promo-box button{width:60px;height:60px;font-size:34px;border-radius:12px;border:1px solid var(--border);background:rgba(30,41,59,.95);cursor:pointer;font-family:"Noto Sans Symbols 2",serif;color:#f8fafc;text-shadow:0 0 2px #000}
 .help{font-size:13px;color:var(--muted);line-height:1.5;margin-top:8px}
 </style>
 </head>
@@ -81,7 +96,6 @@ body.fs .board-outer{max-width:min(92vw,calc(92vh - 100px))}
       <h1>♟️ Cờ vua</h1>
     </div>
   </div>
-
   <div id="menuScreen" class="show">
     <div class="panel">
       <h3>Chế độ chơi</h3>
@@ -97,12 +111,11 @@ body.fs .board-outer{max-width:min(92vw,calc(92vh - 100px))}
         <button type="button" class="diff-btn" data-diff="medium">TB<span class="sub">Vừa sức</span></button>
         <button type="button" class="diff-btn" data-diff="hard">Khó<span class="sub">Thách thức</span></button>
       </div>
-      <p class="help" style="margin-top:12px">Bạn cầm trắng · Máy cầm đen · Không giới hạn thời gian</p>
+      <p class="help" style="margin-top:12px">Bạn = Trắng · Máy = Đen · Không giới hạn thời gian</p>
     </div>
     <button type="button" id="startBtn">Bắt đầu ván cờ</button>
-    <p class="help">Bàn cờ có tọa độ a–h / 1–8 · Phong cấp · Nhập thành · Hoàn tác · Toàn màn hình</p>
+    <p class="help">Quân trắng / đen rõ ràng · Avatar 2 bên · Quân đã ăn hiện bên cạnh người chơi</p>
   </div>
-
   <div id="gameScreen">
     <div class="hud">
       <div class="status" id="status">Lượt trắng</div>
@@ -114,15 +127,30 @@ body.fs .board-outer{max-width:min(92vw,calc(92vh - 100px))}
       </div>
     </div>
     <div class="thinking" id="thinking"></div>
+    <div class="player-bar" id="barTop">
+      <div class="avatar" id="avTop">🤖</div>
+      <div class="player-meta">
+        <div class="player-name" id="nameTop">Đối thủ</div>
+        <div class="player-sub" id="subTop">Quân đen</div>
+      </div>
+      <div class="captured" id="capTop" title="Quân đối thủ đã ăn"></div>
+    </div>
     <div class="board-outer">
       <div class="ranks" id="ranks"></div>
       <div class="board-frame"><div id="board"></div></div>
       <div class="files" id="files"></div>
     </div>
+    <div class="player-bar" id="barBot">
+      <div class="avatar white-side" id="avBot">👤</div>
+      <div class="player-meta">
+        <div class="player-name" id="nameBot">Bạn</div>
+        <div class="player-sub" id="subBot">Quân trắng</div>
+      </div>
+      <div class="captured" id="capBot" title="Quân bạn đã ăn"></div>
+    </div>
     <div class="moves" id="moves"></div>
   </div>
 </div>
-
 <div class="promo" id="promo">
   <div class="promo-box">
     <button type="button" data-p="q">♕</button>
@@ -131,14 +159,11 @@ body.fs .board-outer{max-width:min(92vw,calc(92vh - 100px))}
     <button type="button" data-p="n">♘</button>
   </div>
 </div>
-
 <script>
 (function(){
-  var GLYPH = {
-    wk:'♔', wq:'♕', wr:'♖', wb:'♗', wn:'♘', wp:'♙',
-    bk:'♚', bq:'♛', br:'♜', bb:'♝', bn:'♞', bp:'♟'
-  };
-
+  var GLYPH = { k:'♚', q:'♛', r:'♜', b:'♝', n:'♞', p:'♟' };
+  var VAL = {p:1,n:3,b:3,r:5,q:9,k:0};
+  var ORDER = 'pnbrq';
   var game = new Chess();
   var mode = 'pvp';
   var diff = 'easy';
@@ -149,7 +174,8 @@ body.fs .board-outer{max-width:min(92vw,calc(92vh - 100px))}
   var pendingPromo = null;
   var aiThinking = false;
   var sqEls = {};
-
+  var capturedW = [];
+  var capturedB = [];
   var menuScreen = document.getElementById('menuScreen');
   var gameScreen = document.getElementById('gameScreen');
   var boardEl = document.getElementById('board');
@@ -160,7 +186,10 @@ body.fs .board-outer{max-width:min(92vw,calc(92vh - 100px))}
   var thinkingEl = document.getElementById('thinking');
   var promoEl = document.getElementById('promo');
   var diffPanel = document.getElementById('diffPanel');
-
+  var capTop = document.getElementById('capTop');
+  var capBot = document.getElementById('capBot');
+  var barTop = document.getElementById('barTop');
+  var barBot = document.getElementById('barBot');
   document.querySelectorAll('.mode-btn').forEach(function(b){
     b.onclick = function(){
       document.querySelectorAll('.mode-btn').forEach(function(x){x.classList.remove('on');});
@@ -185,7 +214,7 @@ body.fs .board-outer{max-width:min(92vw,calc(92vh - 100px))}
     }
   };
   document.getElementById('btnUndo').onclick = undo;
-  document.getElementById('btnFlip').onclick = function(){ flipped = !flipped; buildBoard(); paint(); };
+  document.getElementById('btnFlip').onclick = function(){ flipped = !flipped; buildBoard(); paint(); updatePlayers(); };
   document.getElementById('btnFs').onclick = toggleFs;
   document.querySelectorAll('#promo button').forEach(function(b){
     b.onclick = function(){
@@ -195,7 +224,6 @@ body.fs .board-outer{max-width:min(92vw,calc(92vh - 100px))}
       promoEl.classList.remove('show');
     };
   });
-
   function toggleFs(){
     if(!document.body.classList.contains('fs')){
       document.body.classList.add('fs');
@@ -203,9 +231,7 @@ body.fs .board-outer{max-width:min(92vw,calc(92vh - 100px))}
       var el = document.documentElement;
       if(el.requestFullscreen) el.requestFullscreen().catch(function(){});
       else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-    } else {
-      exitFs();
-    }
+    } else exitFs();
   }
   function exitFs(){
     document.body.classList.remove('fs');
@@ -222,7 +248,6 @@ body.fs .board-outer{max-width:min(92vw,calc(92vh - 100px))}
       if(btn) btn.textContent = '⛶ Phóng to';
     }
   });
-
   function startGame(){
     game.reset();
     selected = null;
@@ -231,33 +256,49 @@ body.fs .board-outer{max-width:min(92vw,calc(92vh - 100px))}
     flipped = false;
     aiThinking = false;
     pendingPromo = null;
+    capturedW = [];
+    capturedB = [];
     menuScreen.classList.remove('show');
     gameScreen.classList.add('show');
+    setupPlayers();
     buildBoard();
     paint();
+    updatePlayers();
     updateStatus();
   }
-
+  function setupPlayers(){
+    if(mode === 'ai'){
+      document.getElementById('avTop').textContent = '🤖';
+      document.getElementById('avTop').className = 'avatar black-side';
+      document.getElementById('nameTop').textContent = 'Máy (' + (diff==='easy'?'Dễ':diff==='medium'?'TB':'Khó') + ')';
+      document.getElementById('subTop').textContent = 'Quân đen';
+      document.getElementById('avBot').textContent = '👤';
+      document.getElementById('avBot').className = 'avatar white-side';
+      document.getElementById('nameBot').textContent = 'Bạn';
+      document.getElementById('subBot').textContent = 'Quân trắng';
+    } else {
+      document.getElementById('avTop').textContent = '♞';
+      document.getElementById('avTop').className = 'avatar black-side';
+      document.getElementById('nameTop').textContent = 'Người chơi 2';
+      document.getElementById('subTop').textContent = 'Quân đen';
+      document.getElementById('avBot').textContent = '♙';
+      document.getElementById('avBot').className = 'avatar white-side';
+      document.getElementById('nameBot').textContent = 'Người chơi 1';
+      document.getElementById('subBot').textContent = 'Quân trắng';
+    }
+  }
   function sqName(r,c){ return 'abcdefgh'[c] + (8-r); }
-
   function buildBoard(){
     boardEl.innerHTML = '';
     ranksEl.innerHTML = '';
     filesEl.innerHTML = '';
     sqEls = {};
-
     var rankOrder = flipped ? [1,2,3,4,5,6,7,8] : [8,7,6,5,4,3,2,1];
     var fileOrder = flipped ? 'hgfedcba' : 'abcdefgh';
-
     for(var i=0;i<8;i++){
-      var rs = document.createElement('span');
-      rs.textContent = rankOrder[i];
-      ranksEl.appendChild(rs);
-      var fs = document.createElement('span');
-      fs.textContent = fileOrder[i];
-      filesEl.appendChild(fs);
+      var rs = document.createElement('span'); rs.textContent = rankOrder[i]; ranksEl.appendChild(rs);
+      var fs = document.createElement('span'); fs.textContent = fileOrder[i]; filesEl.appendChild(fs);
     }
-
     for(var r=0;r<8;r++){
       for(var c=0;c<8;c++){
         var vr = flipped ? 7-r : r;
@@ -275,45 +316,33 @@ body.fs .board-outer{max-width:min(92vw,calc(92vh - 100px))}
       }
     }
   }
-
   function paint(){
     var names = Object.keys(sqEls);
     for(var i=0;i<names.length;i++){
       var name = names[i];
       var sq = sqEls[name];
       var piece = game.get(name);
-
       sq.classList.toggle('sel', selected === name);
       sq.classList.toggle('last', name===lastFrom || name===lastTo);
-      var isCheck = false;
-      if(game.in_check() && piece && piece.type==='k' && piece.color===game.turn()) isCheck = true;
+      var isCheck = !!(game.in_check() && piece && piece.type==='k' && piece.color===game.turn());
       sq.classList.toggle('check', isCheck);
-
       var oldDot = sq.querySelector('.dot');
       var oldRing = sq.querySelector('.ring');
       if(oldDot) oldDot.remove();
       if(oldRing) oldRing.remove();
       if(legalSet[name]){
-        if(piece){
-          var ring = document.createElement('span');
-          ring.className = 'ring';
-          sq.appendChild(ring);
-        } else {
-          var dot = document.createElement('span');
-          dot.className = 'dot';
-          sq.appendChild(dot);
-        }
+        if(piece){ var ring = document.createElement('span'); ring.className = 'ring'; sq.appendChild(ring); }
+        else { var dot = document.createElement('span'); dot.className = 'dot'; sq.appendChild(dot); }
       }
-
       var pc = sq.querySelector('.pc');
       if(piece){
-        var key = piece.color + piece.type;
-        pc.textContent = GLYPH[key] || '';
+        pc.textContent = GLYPH[piece.type] || '';
+        pc.className = 'pc ' + piece.color;
       } else {
         pc.textContent = '';
+        pc.className = 'pc';
       }
     }
-
     var hist = game.history({verbose:true});
     var txt = '';
     for(var i=0;i<hist.length;i+=2){
@@ -322,15 +351,44 @@ body.fs .board-outer{max-width:min(92vw,calc(92vh - 100px))}
       txt += '   ';
     }
     movesEl.textContent = txt || 'Chưa có nước đi';
+    updateCapturedUI();
   }
-
+  function renderCaptured(list, colorOfCaptured){
+    var counts = {};
+    for(var i=0;i<list.length;i++) counts[list[i]] = (counts[list[i]]||0)+1;
+    var html = '';
+    for(var j=0;j<ORDER.length;j++){
+      var t = ORDER[j];
+      var n = counts[t]||0;
+      for(var k=0;k<n;k++) html += '<span class="cap ' + colorOfCaptured + '">' + GLYPH[t] + '</span>';
+    }
+    return html;
+  }
+  function materialScore(list){
+    var s = 0;
+    for(var i=0;i<list.length;i++) s += VAL[list[i]]||0;
+    return s;
+  }
+  function updateCapturedUI(){
+    var botHtml = renderCaptured(capturedW, 'b');
+    var topHtml = renderCaptured(capturedB, 'w');
+    var mw = materialScore(capturedW);
+    var mb = materialScore(capturedB);
+    if(mw > mb) botHtml += '<span class="mat-adv">+' + (mw-mb) + '</span>';
+    if(mb > mw) topHtml += '<span class="mat-adv">+' + (mb-mw) + '</span>';
+    capBot.innerHTML = botHtml;
+    capTop.innerHTML = topHtml;
+  }
+  function updatePlayers(){
+    var turn = game.turn();
+    barBot.classList.toggle('active', turn==='w' && !game.game_over());
+    barTop.classList.toggle('active', turn==='b' && !game.game_over());
+  }
   function onSquareClick(name){
     if(aiThinking) return;
     if(game.game_over()) return;
     if(mode==='ai' && game.turn()==='b') return;
-
     var piece = game.get(name);
-
     if(selected){
       if(legalSet[name]){
         var fromP = game.get(selected);
@@ -342,21 +400,11 @@ body.fs .board-outer{max-width:min(92vw,calc(92vh - 100px))}
         doMove(selected, name, undefined);
         return;
       }
-      if(piece && piece.color === game.turn()){
-        selectSquare(name);
-        return;
-      }
-      selected = null;
-      legalSet = {};
-      paint();
-      return;
+      if(piece && piece.color === game.turn()){ selectSquare(name); return; }
+      selected = null; legalSet = {}; paint(); return;
     }
-
-    if(piece && piece.color === game.turn()){
-      selectSquare(name);
-    }
+    if(piece && piece.color === game.turn()) selectSquare(name);
   }
-
   function selectSquare(name){
     selected = name;
     legalSet = {};
@@ -364,21 +412,20 @@ body.fs .board-outer{max-width:min(92vw,calc(92vh - 100px))}
     for(var i=0;i<moves.length;i++) legalSet[moves[i].to] = true;
     paint();
   }
-
   function doMove(from, to, promotion){
     var move = game.move({from:from, to:to, promotion: promotion || 'q'});
     if(!move) return;
-    lastFrom = from;
-    lastTo = to;
-    selected = null;
-    legalSet = {};
-    paint();
-    updateStatus();
-    if(!game.game_over() && mode==='ai' && game.turn()==='b'){
-      setTimeout(aiMove, 100);
+    if(move.captured){
+      if(move.color === 'w') capturedW.push(move.captured);
+      else capturedB.push(move.captured);
     }
+    lastFrom = from; lastTo = to;
+    selected = null; legalSet = {};
+    paint();
+    updatePlayers();
+    updateStatus();
+    if(!game.game_over() && mode==='ai' && game.turn()==='b') setTimeout(aiMove, 100);
   }
-
   function updateStatus(){
     statusEl.className = 'status';
     if(game.in_checkmate()){
@@ -396,25 +443,29 @@ body.fs .board-outer{max-width:min(92vw,calc(92vh - 100px))}
       statusEl.classList.add(game.turn()==='w'?'turn-w':'turn-b');
     }
     thinkingEl.textContent = '';
+    updatePlayers();
   }
-
+  function rebuildCapturedFromHistory(){
+    capturedW = []; capturedB = [];
+    var hist = game.history({verbose:true});
+    for(var i=0;i<hist.length;i++){
+      if(hist[i].captured){
+        if(hist[i].color==='w') capturedW.push(hist[i].captured);
+        else capturedB.push(hist[i].captured);
+      }
+    }
+  }
   function undo(){
     if(aiThinking) return;
     if(mode==='ai'){ game.undo(); game.undo(); }
     else game.undo();
-    selected = null;
-    legalSet = {};
+    selected = null; legalSet = {};
+    rebuildCapturedFromHistory();
     var hist = game.history({verbose:true});
-    if(hist.length){
-      var m = hist[hist.length-1];
-      lastFrom = m.from; lastTo = m.to;
-    } else {
-      lastFrom = lastTo = null;
-    }
-    paint();
-    updateStatus();
+    if(hist.length){ lastFrom = hist[hist.length-1].from; lastTo = hist[hist.length-1].to; }
+    else { lastFrom = lastTo = null; }
+    paint(); updateStatus();
   }
-
   var PIECE_VAL = {p:100, n:320, b:330, r:500, q:900, k:20000};
   var PST = {
     p:[0,0,0,0,0,0,0,0,50,50,50,50,50,50,50,50,10,10,20,30,30,20,10,10,5,5,10,25,25,10,5,5,0,0,0,20,20,0,0,0,5,-5,-10,0,0,-10,-5,5,5,10,10,-20,-20,10,10,5,0,0,0,0,0,0,0,0],
@@ -424,7 +475,6 @@ body.fs .board-outer{max-width:min(92vw,calc(92vh - 100px))}
     q:[-20,-10,-10,-5,-5,-10,-10,-20,-10,0,0,0,0,0,0,-10,-10,0,5,5,5,5,0,-10,-5,0,5,5,5,5,0,-5,0,0,5,5,5,5,0,-5,-10,5,5,5,5,5,0,-10,-10,0,5,0,0,0,0,-10,-20,-10,-10,-5,-5,-10,-10,-20],
     k:[-30,-40,-40,-50,-50,-40,-40,-30,-30,-40,-40,-50,-50,-40,-40,-30,-30,-40,-40,-50,-50,-40,-40,-30,-30,-40,-40,-50,-50,-40,-40,-30,-20,-30,-30,-40,-40,-30,-30,-20,-10,-20,-20,-20,-20,-20,-20,-10,20,20,0,0,0,0,20,20,20,30,10,0,0,10,30,20]
   };
-
   function evaluate(g){
     if(g.in_checkmate()) return g.turn()==='w' ? -99999 : 99999;
     if(g.in_draw()) return 0;
@@ -434,51 +484,35 @@ body.fs .board-outer{max-width:min(92vw,calc(92vh - 100px))}
       var v = PIECE_VAL[p.type];
       var pst = PST[p.type];
       var idx = p.color==='w' ? (r*8+c) : ((7-r)*8+c);
-      var bonus = pst ? pst[idx] : 0;
-      score += (p.color==='w' ? 1 : -1) * (v + bonus);
+      score += (p.color==='w'?1:-1) * (v + (pst?pst[idx]:0));
     }
     return score;
   }
-
   function minimax(g, depth, alpha, beta, maximizing){
     if(depth===0 || g.game_over()) return evaluate(g);
     var moves = g.moves({verbose:true});
-    moves.sort(function(a,b){ return (b.captured?PIECE_VAL[b.captured]:0) - (a.captured?PIECE_VAL[a.captured]:0); });
+    moves.sort(function(a,b){ return (b.captured?PIECE_VAL[b.captured]:0)-(a.captured?PIECE_VAL[a.captured]:0); });
     if(maximizing){
-      var maxE = -Infinity;
-      for(var i=0;i<moves.length;i++){
-        g.move(moves[i]);
-        var ev = minimax(g, depth-1, alpha, beta, false);
-        g.undo();
-        if(ev>maxE) maxE=ev;
-        if(ev>alpha) alpha=ev;
-        if(beta<=alpha) break;
-      }
+      var maxE=-Infinity;
+      for(var i=0;i<moves.length;i++){ g.move(moves[i]); var ev=minimax(g,depth-1,alpha,beta,false); g.undo(); if(ev>maxE)maxE=ev; if(ev>alpha)alpha=ev; if(beta<=alpha)break; }
       return maxE;
     }
-    var minE = Infinity;
-    for(var i=0;i<moves.length;i++){
-      g.move(moves[i]);
-      var ev = minimax(g, depth-1, alpha, beta, true);
-      g.undo();
-      if(ev<minE) minE=ev;
-      if(ev<beta) beta=ev;
-      if(beta<=alpha) break;
-    }
+    var minE=Infinity;
+    for(var i=0;i<moves.length;i++){ g.move(moves[i]); var ev=minimax(g,depth-1,alpha,beta,true); g.undo(); if(ev<minE)minE=ev; if(ev<beta)beta=ev; if(beta<=alpha)break; }
     return minE;
   }
-
   function aiMove(){
-    if(game.game_over() || game.turn()!=='b') return;
-    aiThinking = true;
-    thinkingEl.textContent = 'Máy đang suy nghĩ…';
-    statusEl.textContent = 'Máy (Đen) đang đi…';
+    if(game.game_over()||game.turn()!=='b') return;
+    aiThinking=true;
+    thinkingEl.textContent='Máy đang suy nghĩ…';
+    statusEl.textContent='Máy (Đen) đang đi…';
     setTimeout(function(){
-      var depth = diff==='easy' ? 2 : (diff==='medium' ? 3 : 4);
+      var depth = diff==='easy'?2:(diff==='medium'?3:4);
       var moves = game.moves({verbose:true});
       if(!moves.length){ aiThinking=false; updateStatus(); return; }
       if(diff==='easy' && Math.random()<0.35){
-        var m = moves[Math.floor(Math.random()*moves.length)];
+        var m=moves[Math.floor(Math.random()*moves.length)];
+        if(m.captured) capturedB.push(m.captured);
         lastFrom=m.from; lastTo=m.to; game.move(m);
         aiThinking=false; paint(); updateStatus(); return;
       }
@@ -486,11 +520,14 @@ body.fs .board-outer{max-width:min(92vw,calc(92vh - 100px))}
       var best=null, bestScore=Infinity;
       for(var i=0;i<moves.length;i++){
         game.move(moves[i]);
-        var score = minimax(game, depth-1, -Infinity, Infinity, true);
+        var score=minimax(game,depth-1,-Infinity,Infinity,true);
         game.undo();
-        if(score<bestScore || (score===bestScore && Math.random()<0.25)){ bestScore=score; best=moves[i]; }
+        if(score<bestScore||(score===bestScore&&Math.random()<0.25)){ bestScore=score; best=moves[i]; }
       }
-      if(best){ lastFrom=best.from; lastTo=best.to; game.move(best); }
+      if(best){
+        if(best.captured) capturedB.push(best.captured);
+        lastFrom=best.from; lastTo=best.to; game.move(best);
+      }
       aiThinking=false; paint(); updateStatus();
     }, diff==='hard'?40:100);
   }
