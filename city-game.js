@@ -1,1 +1,1 @@
-PLACEHOLDER_USE_LIVE
+(function(){Promise.all([fetch("/city-game-a.js?v=v2").then(function(r){if(!r.ok)throw new Error("a "+r.status);return r.text()}),fetch("/city-game-b.js?v=v2").then(function(r){if(!r.ok)throw new Error("b "+r.status);return r.text()})]).then(function(p){(0,eval)(p[0]+p[1])}).catch(function(e){var el=document.getElementById("load");if(el)el.innerHTML="<div style=padding:24px>Loi tai: "+e+"<br><a href=/ style=color:#38bdf8>Hardwin</a></div>";console.error(e)})})();
