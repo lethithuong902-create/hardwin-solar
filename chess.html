@@ -2,24 +2,45 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Hardwin · Cờ vua</title>
 <link rel="icon" href="/favicon.png?v=6">
+<style>
+html,body{margin:0;height:100%;background:#060913;overflow:hidden}
+#msg{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;color:#e8eef8;font-family:system-ui;font-size:15px;padding:24px;text-align:center}
+#frame{border:0;width:100%;height:100%;position:fixed;inset:0;display:none}
+</style>
 </head>
-<body style="margin:0;background:#060913;color:#e8eef8;font-family:system-ui;display:flex;align-items:center;justify-content:center;min-height:100vh">
+<body>
 <div id="msg">Đang tải cờ vua…</div>
+<iframe id="frame" title="Cờ vua" allowfullscreen></iframe>
 <script>
 (function(){
-  var url = "https://raw.githubusercontent.com/lethithuong902-create/hardwin-solar/f64a468aa60db864e4114bd5d96780bc44c03a8e/chess.html";
+  var url = 'https://cdn.jsdelivr.net/gh/lethithuong902-create/hardwin-solar@f64a468aa60db864e4114bd5d96780bc44c03a8e/chess.html';
+  var msg = document.getElementById('msg');
+  var frame = document.getElementById('frame');
+  function fail(e){
+    msg.innerHTML = 'Lỗi tải: '+e+'<br><br><a href="/" style="color:#38bdf8">← Hardwin</a>';
+    msg.style.display = 'flex';
+  }
   fetch(url)
-    .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.text(); })
+    .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
     .then(function(html){
-      var d = document.open("text/html", "replace");
-      d.write(html);
-      d.close();
+      // iframe srcdoc works on mobile Safari/Chrome; scripts inside run
+      frame.srcdoc = html;
+      frame.style.display = 'block';
+      msg.style.display = 'none';
     })
     .catch(function(e){
-      document.getElementById("msg").innerHTML = "Lỗi tải: "+e+"<br><br><a href=\"/\" style=\"color:#38bdf8\">← Hardwin</a>";
+      // fallback: try raw github
+      return fetch('https://raw.githubusercontent.com/lethithuong902-create/hardwin-solar/f64a468aa60db864e4114bd5d96780bc44c03a8e/chess.html')
+        .then(function(r){ if(!r.ok) throw e; return r.text(); })
+        .then(function(html){
+          frame.srcdoc = html;
+          frame.style.display = 'block';
+          msg.style.display = 'none';
+        })
+        .catch(fail);
     });
 })();
 </script>
