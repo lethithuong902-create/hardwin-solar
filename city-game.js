@@ -1,11 +1,8 @@
 (function(){
-  var el = document.getElementById('load');
-  var s = document.createElement('script');
-  s.src = 'https://cdn.jsdelivr.net/gh/lethithuong902-create/hardwin-solar@a63dafe712ab7223387c45a89ec0d0bd33f9b749/city-game.js';
-  s.async = false;
-  s.onload = function(){};
-  s.onerror = function(){
-    if(el) el.innerHTML = '<div style="padding:24px;text-align:center">Lỗi tải Open City (mạng).<br>Thử Wi‑Fi hoặc Chrome.<br><br><a href="/" style="color:#38bdf8">← Hardwin</a></div>';
-  };
-  document.head.appendChild(s);
+  var el=document.getElementById('load');
+  function fail(m){if(el)el.innerHTML='<div style="padding:24px;text-align:center">'+m+'<br><br><a href="/" style="color:#38bdf8">← Hardwin</a></div>';}
+  function get(url,cb){var x=new XMLHttpRequest();x.open('GET',url,true);x.onload=function(){if(x.status>=200&&x.status<300)cb(x.responseText);else fail('Lỗi '+x.status);};x.onerror=function(){fail('Lỗi mạng');};x.send();}
+  var v='?v=gta2', files=['/city-p0.js','/city-p1.js','/city-p2.js','/city-p3.js','/city-p4.js','/city-p5.js','/city-p6.js'], i=0, buf='';
+  function next(){if(i>=files.length){try{(0,eval)(buf);}catch(e){console.error(e);fail(e.message||e);}return;}get(files[i++]+v,function(t){buf+=t;next();});}
+  next();
 })();
