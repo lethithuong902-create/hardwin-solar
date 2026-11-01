@@ -16,8 +16,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0b1520;font-family:
 #hud{position:fixed;left:12px;top:max(56px,calc(env(safe-area-inset-top)+48px));z-index:50;background:rgba(8,14,28,.94);border:1px solid rgba(148,163,184,.35);border-radius:14px;padding:12px 14px;min-width:150px;font-size:13px}
 #hud .row{margin:3px 0}
 #hpWrap{height:12px;background:rgba(255,255,255,.12);border-radius:8px;margin-top:6px;overflow:hidden}
-#hpBar,#fuelBar{height:100%;width:100%;background:linear-gradient(90deg,#16a34a,#4ade80);border-radius:8px}
-#fuelBar{background:linear-gradient(90deg,#ca8a04,#fbbf24)}
+#hpBar{height:100%;width:100%;background:linear-gradient(90deg,#16a34a,#4ade80);border-radius:8px}
 #cross{position:fixed;left:50%;top:48%;width:16px;height:16px;margin:-8px 0 0 -8px;border:2px solid rgba(255,255,255,.75);border-radius:50%;z-index:20;pointer-events:none}
 #joyZone{position:fixed;left:max(12px,env(safe-area-inset-left));bottom:max(20px,env(safe-area-inset-bottom));z-index:55;width:140px;height:140px}
 #joyBase{width:140px;height:140px;border-radius:50%;background:rgba(15,23,42,.6);border:3px solid rgba(148,163,184,.45);position:relative}
@@ -54,7 +53,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0b1520;font-family:
   <button type="button" class="hero" data-hero="spider">🕸️ Người nhện</button>
   <button type="button" class="hero" data-hero="iron">🤖 Người sắt</button>
   <h4>Điều khiển</h4>
-  <div style="font-size:12px;opacity:.85;line-height:1.5">WASD/Joystick · Nhảy · E · G · F xe · R đổ xăng<br>Nhện: BẮN = tơ · Sắt: click laser · double-click bay</div>
+  <div style="font-size:12px;opacity:.85;line-height:1.5">WASD/Joystick · Nhảy · E · G · F xe<br>Nhện: BẮN = tơ · Sắt: click laser · double-click bay</div>
 </div>
 <div id="top"><img src="/favicon.png?v=6" alt="H"><div class="brand">HARDWIN · OPEN CITY</div></div>
 <div id="hud">
@@ -63,8 +62,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0b1520;font-family:
   <div class="row" id="spd">0 km/h</div>
   <div class="row" style="opacity:.9;margin-top:6px">Máu</div>
   <div id="hpWrap"><div id="hpBar"></div></div>
-  <div class="row" style="opacity:.9;margin-top:6px" id="fuelLabel">Xăng 100%</div>
-  <div id="hpWrap"><div id="fuelBar"></div></div>
 </div>
 <div id="cross"></div>
 <div id="joyZone"><div id="joyBase"><div id="joyKnob"></div></div></div>
@@ -73,12 +70,11 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0b1520;font-family:
   <button type="button" id="btnEnter">E</button>
   <button type="button" id="btnCar">🚗</button>
   <button type="button" id="btnJump">⬆</button>
-  <button type="button" id="btnGas" style="display:none;background:rgba(202,138,4,.7)">⛽</button>
 </div>
 <div id="prompt">E — Nhặt / Vào</div>
 <div id="toast"></div>
 <canvas id="c"></canvas>
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
-<script src="/city-game.js?v=gta3"></script>
+<script src="/city-game.js?v=ok1"></script>
 </body>
 </html>
